@@ -50,17 +50,23 @@ interface Props {
   onApagar?: () => Promise<void>;
   onOcultar?: () => Promise<void>;
   onRestaurar?: () => Promise<void>;
+  /**
+   * Primeira bolha de uma sequência do mesmo lado (padrão WhatsApp): só ela
+   * leva a "ponta" e o respiro maior acima. Quem decide é o `ChatThread`, que
+   * conhece a mensagem anterior. Ausente = `true` (bolha avulsa).
+   */
+  cauda?: boolean;
 }
 
 function AckIndicator({ status, t }: { status: string; t: (texto: string) => string }) {
   if (status === "read") {
-    return <Checks size={12} weight="bold" className="text-blue-400" aria-label={t("Lida")} />;
+    return <Checks size={14} weight="bold" className="text-chat-read" aria-label={t("Lida")} />;
   }
   if (status === "delivered") {
-    return <Checks size={12} weight="bold" className="text-current/70" aria-label={t("Entregue")} />;
+    return <Checks size={14} weight="bold" aria-label={t("Entregue")} />;
   }
   if (status === "sent") {
-    return <Check size={12} weight="bold" className="text-current/70" aria-label={t("Enviada")} />;
+    return <Check size={14} weight="bold" aria-label={t("Enviada")} />;
   }
   return null;
 }
@@ -76,6 +82,7 @@ export function MessageBubble({
   onApagar,
   onOcultar,
   onRestaurar,
+  cauda = true,
 }: Props) {
   const [editando, setEditando] = useState(false);
   const [texto, setTexto] = useState(message.body ?? "");
@@ -201,6 +208,13 @@ export function MessageBubble({
   // `lerRemetenteDeGrupo` (Task 2): este componente não conhece o formato de
   // `metadata.group_sender`, só o resultado já validado.
   const remetente = !isOutbound ? lerRemetenteDeGrupo(message.metadata) : null;
+  // Hora "na linha" (padrão WhatsApp): quando o último elemento da bolha é o
+  // texto, a hora fica no canto inferior direito, na mesma linha da última
+  // frase. Um espaçador invisível com a MESMA largura reserva o lugar no fim do
+  // texto, para a hora nunca cobrir a última palavra. Mídia sem legenda,
+  // cartão, edição e mensagem apagada mantêm a hora numa linha própria.
+  const metaNaLinha =
+    !editando && !apagada && !ocultaNoCrm && Boolean(message.body) && !isContact && !localizacao;
 
   async function salvarEdicao() {
     const novoTexto = texto.trim();
@@ -218,7 +232,8 @@ export function MessageBubble({
     <div
       data-search-match={searchMatch || undefined}
       className={cn(
-        "group flex w-full min-w-0 items-center gap-1 px-4 py-1",
+        "group flex w-full min-w-0 items-center gap-1 px-3 md:px-[6%]",
+        cauda ? "pt-2" : "pt-0.5",
         isOutbound ? "justify-end" : "justify-start",
       )}
     >
@@ -229,20 +244,27 @@ export function MessageBubble({
         // fez a spec achar que havia mensagem onde não havia (issue #1318).
         data-testid="message-bubble"
         className={cn(
-          "relative max-w-[75%] min-w-0 text-sm",
+          "relative max-w-[85%] min-w-0 text-sm md:max-w-[65%]",
           isBareSticker
             ? "px-0 py-0"
             : cn(
-                "rounded-2xl px-3 py-2 shadow-sm",
-                temMenu && "pr-8",
+                // Padrão WhatsApp: cantos de 8px, sombra rente e a "ponta" só
+                // na primeira bolha da sequência (o canto do lado dela é reto e
+                // o triângulo do pseudo-elemento completa o desenho).
+                "rounded-lg px-2.5 pb-1.5 pt-1.5 shadow-sm",
+                temMenu && "[@media(hover:none)]:pr-8",
                 isOutbound
-                  ? "rounded-br-sm bg-primary text-primary-foreground"
-                  : "rounded-bl-sm bg-muted text-foreground",
+                  ? "bg-chat-out text-chat-out-foreground"
+                  : "bg-chat-in text-chat-in-foreground",
+                cauda &&
+                  (isOutbound
+                    ? "rounded-tr-none after:absolute after:top-0 after:-right-2 after:h-3 after:w-2 after:bg-chat-out after:content-[''] after:[clip-path:polygon(0_0,100%_0,0_100%)]"
+                    : "rounded-tl-none before:absolute before:top-0 before:-left-2 before:h-3 before:w-2 before:bg-chat-in before:content-[''] before:[clip-path:polygon(0_0,100%_0,100%_100%)]"),
               ),
           isFailed && "border border-destructive",
           // A marca da busca é ANEL, não cor de fundo: o fundo já diz de quem é
           // a mensagem, e trocá-lo apagaria essa leitura justo na bolha achada.
-          searchMatch && "ring-2 ring-foreground ring-offset-2 ring-offset-background",
+          searchMatch && "ring-2 ring-foreground ring-offset-2 ring-offset-chat-wallpaper",
           apagada && "opacity-70",
         )}
       >
@@ -253,7 +275,11 @@ export function MessageBubble({
                 className={cn(
                   "absolute right-1 top-1 z-10 rounded-md p-0.5 transition-opacity focus-visible:outline-2 focus-visible:outline-offset-1",
                   "opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100",
-                  isOutbound ? "text-primary-foreground hover:bg-primary-foreground/15" : "text-muted-foreground hover:bg-background/70",
+                  // Fundo da própria bolha atrás da setinha: ela passa por cima do
+                  // fim da primeira linha sem cortar o texto pela metade.
+                  isOutbound
+                    ? "bg-chat-out text-chat-out-meta shadow-[-6px_0_6px_var(--color-chat-out)]"
+                    : "bg-chat-in text-chat-in-meta shadow-[-6px_0_6px_var(--color-chat-in)]",
                 )}>
                 <CaretDown size={16} weight="bold" aria-hidden />
               </button>
@@ -312,9 +338,7 @@ export function MessageBubble({
           <div
             className={cn(
               "mb-1 rounded-md border-l-2 px-2 py-1 text-xs",
-              isOutbound
-                ? "border-primary-foreground/50 bg-primary-foreground/10"
-                : "border-primary bg-background/60",
+              "border-l-4 border-accent bg-text/5",
             )}
           >
             <div className="font-medium opacity-80">
@@ -342,12 +366,17 @@ export function MessageBubble({
           </div>
         )}
         {remetente && (
-          <p className="mb-0.5 text-[11px] font-medium text-muted-foreground">
+          <p className="mb-0.5 text-xs font-semibold text-accent">
             {rotuloDoRemetente(remetente)}
           </p>
         )}
         {senderLabel && (
-          <div className="mb-0.5 flex items-center gap-1 text-[11px] font-semibold opacity-80">
+          <div
+            className={cn(
+              "mb-0.5 flex items-center gap-1 text-xs font-semibold",
+              isOutbound ? "text-chat-out-meta" : "text-chat-in-meta",
+            )}
+          >
             {senderLabel === "IA" ? (
               <Robot size={10} weight="duotone" aria-hidden />
             ) : null}
@@ -414,15 +443,27 @@ export function MessageBubble({
             {localizacao && <LocationCard localizacao={localizacao} />}
 
             {message.body && !isContact && !localizacao && (
-              <p className="whitespace-pre-wrap wrap-anywhere leading-snug">{message.body}</p>
+              <p className="whitespace-pre-wrap wrap-anywhere leading-snug">
+                {message.body}
+                {/* O espaçador: invisível, fora da árvore de acessibilidade,
+                    só ocupa a largura da hora + tiques. */}
+                <span aria-hidden className="invisible ml-2 inline-flex select-none items-center gap-1 align-bottom text-[11px] leading-none">
+                  {editada && <span>{t("editada")}</span>}
+                  <span>{time}</span>
+                  {showCitationButton && <span className="inline-block w-4" />}
+                  {isOutbound && !isFailed && <span className="inline-block w-3.5" />}
+                  {isFailed && <span className="pl-3.5">{t("Falhou")}</span>}
+                </span>
+              </p>
             )}
           </>
         )}
 
         <div
           className={cn(
-            "mt-1 flex items-center justify-end gap-1 text-[10px]",
-            isOutbound ? "text-primary-foreground" : "text-muted-foreground",
+            "flex items-center gap-1 text-[11px] leading-none",
+            metaNaLinha ? "absolute bottom-1.5 right-2.5" : "mt-1 justify-end",
+            isOutbound ? "text-chat-out-meta" : "text-chat-in-meta",
           )}
         >
           {editada && (

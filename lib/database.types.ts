@@ -4636,6 +4636,7 @@ export type Database = {
           locale: string | null
           merged_at: string | null
           name: string | null
+          notes: string | null
           organization_id: string
           person_id: string | null
           phone_lookup_at: string | null
@@ -4680,6 +4681,7 @@ export type Database = {
           locale?: string | null
           merged_at?: string | null
           name?: string | null
+          notes?: string | null
           organization_id: string
           person_id?: string | null
           phone_lookup_at?: string | null
@@ -4724,6 +4726,7 @@ export type Database = {
           locale?: string | null
           merged_at?: string | null
           name?: string | null
+          notes?: string | null
           organization_id?: string
           person_id?: string | null
           phone_lookup_at?: string | null

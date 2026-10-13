@@ -227,6 +227,23 @@
   --agenda-pessoa-6: #608bda; /* índigo */
   --agenda-pessoa-7: #7b5bad; /* violeta */
   --agenda-pessoa-8: #cc77b1; /* framboesa */
+
+  /* Conversa no estilo WhatsApp (Inbox). Contrastes medidos: texto ≥ 6.7:1,
+     hora ≥ 5:1 e ícone de "lida" ≥ 3.7:1 nas duas bolhas, nos dois temas. */
+  --color-chat-wallpaper: #efeae2;
+  --chat-wallpaper-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='none' stroke='%23ddd5c9' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 22h24a6 6 0 0 1 6 6v10a6 6 0 0 1-6 6H31l-8 6v-6h-3a6 6 0 0 1-6-6V28a6 6 0 0 1 6-6z'/%3E%3Ccircle cx='122' cy='34' r='8'/%3E%3Cpath d='M112 98l5 5 10-11'/%3E%3Cpath d='M52 132l5 5 10-11M61 132l5 5 10-11'/%3E%3Cpath d='M138 128h20a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5h-13l-6 5v-5h-1a5 5 0 0 1-5-5v-8a5 5 0 0 1 5-5z'/%3E%3Ccircle cx='42' cy='94' r='3'/%3E%3Ccircle cx='160' cy='78' r='2.5'/%3E%3Ccircle cx='92' cy='166' r='2.5'/%3E%3Cpath d='M86 52l4 8 8 1-6 6 2 8-8-4-8 4 2-8-6-6 8-1z'/%3E%3Cpath d='M150 10v8M146 14h8'/%3E%3Cpath d='M14 150v8M10 154h8'/%3E%3C/g%3E%3C/svg%3E");
+  --color-chat-in: #ffffff;
+  --color-chat-in-foreground: #111b21;
+  --color-chat-in-meta: #5b6a73;
+  --color-chat-out: #d9fdd3;
+  --color-chat-out-foreground: #111b21;
+  --color-chat-out-meta: #5b6a73;
+  --color-chat-read: #027eb5;
+  --color-chat-chip: #ffffff;
+  --color-chat-chip-foreground: #54656f;
+  --color-chat-bar: #f0f2f5;
+  --color-chat-input: #ffffff;
+
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -437,6 +454,24 @@
   --agenda-pessoa-6: #6c97e7;
   --agenda-pessoa-7: #be9ef6;
   --agenda-pessoa-8: #cc77b1;
+
+  /* Conversa no estilo WhatsApp (Inbox) — tema escuro. */
+  --color-chat-wallpaper: #0b141a;
+  --chat-wallpaper-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='none' stroke='%2317232a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 22h24a6 6 0 0 1 6 6v10a6 6 0 0 1-6 6H31l-8 6v-6h-3a6 6 0 0 1-6-6V28a6 6 0 0 1 6-6z'/%3E%3Ccircle cx='122' cy='34' r='8'/%3E%3Cpath d='M112 98l5 5 10-11'/%3E%3Cpath d='M52 132l5 5 10-11M61 132l5 5 10-11'/%3E%3Cpath d='M138 128h20a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5h-13l-6 5v-5h-1a5 5 0 0 1-5-5v-8a5 5 0 0 1 5-5z'/%3E%3Ccircle cx='42' cy='94' r='3'/%3E%3Ccircle cx='160' cy='78' r='2.5'/%3E%3Ccircle cx='92' cy='166' r='2.5'/%3E%3Cpath d='M86 52l4 8 8 1-6 6 2 8-8-4-8 4 2-8-6-6 8-1z'/%3E%3Cpath d='M150 10v8M146 14h8'/%3E%3Cpath d='M14 150v8M10 154h8'/%3E%3C/g%3E%3C/svg%3E");
+  --color-chat-in: #202c33;
+  --color-chat-in-foreground: #e9edef;
+  --color-chat-in-meta: #9fadb5;
+  --color-chat-out: #005c4b;
+  --color-chat-out-foreground: #e9edef;
+  --color-chat-out-meta: #b9d6cf;
+  --color-chat-read: #53bdeb;
+  --color-chat-chip: #182229;
+  --color-chat-chip-foreground: #9fadb5;
+  /* #1a2329 e não o #202c33 do WhatsApp: o texto secundário do cabeçalho
+     (--color-text-muted) cairia para 4.18:1; aqui fica em 4.67:1. */
+  --color-chat-bar: #1a2329;
+  --color-chat-input: #2a3942;
+
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -592,6 +627,21 @@
   --ease-in-out: var(--ease-in-out);
   --ease-out-slow: var(--ease-out-slow);
   --ease-spring: var(--ease-spring);
+
+  /* Conversa no estilo WhatsApp (Inbox) */
+  --color-chat-wallpaper: var(--color-chat-wallpaper);
+  --color-chat-in: var(--color-chat-in);
+  --color-chat-in-foreground: var(--color-chat-in-foreground);
+  --color-chat-in-meta: var(--color-chat-in-meta);
+  --color-chat-out: var(--color-chat-out);
+  --color-chat-out-foreground: var(--color-chat-out-foreground);
+  --color-chat-out-meta: var(--color-chat-out-meta);
+  --color-chat-read: var(--color-chat-read);
+  --color-chat-chip: var(--color-chat-chip);
+  --color-chat-chip-foreground: var(--color-chat-chip-foreground);
+  --color-chat-bar: var(--color-chat-bar);
+  --color-chat-input: var(--color-chat-input);
+
 }
 
 /* `duration-*` não tem espaço de tema no v4 (o `transitionDuration` do v3 não
@@ -1502,4 +1552,13 @@
     animation-duration: 1s !important;
     animation-iteration-count: infinite !important;
   }
+}
+
+/* Papel de parede da conversa (Inbox), no espírito do WhatsApp: cor lisa +
+   padrão de traço fino, desenhado para este produto. Fica no contêiner que NÃO
+   rola, então o padrão não "anda" com as mensagens. */
+.chat-papel-de-parede {
+  background-color: var(--color-chat-wallpaper);
+  background-image: var(--chat-wallpaper-pattern);
+  background-size: 180px 180px;
 }

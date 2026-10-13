@@ -39,6 +39,7 @@ import { TimelineView } from "@/components/contacts/TimelineView";
 import { EditContactDialog } from "@/components/contacts/EditContactDialog";
 import { AnonymizeDialog } from "@/components/contacts/AnonymizeDialog";
 import { PropostasDeDado } from "@/components/contacts/PropostasDeDado";
+import { AnotacoesDoContato } from "@/components/contacts/AnotacoesDoContato";
 import { RoteirosDoContato } from "@/components/contacts/RoteirosDoContato";
 import { ConversaNoDossie } from "@/components/kanban/ConversaNoDossie";
 import { rotuloDoContato } from "@/lib/contacts/rotulo-do-contato";
@@ -415,6 +416,14 @@ export function ContactDetailClient({ contactId, paineisDeModulo = [] }: Props) 
                 </dd>
               </div>
             </dl>
+          </Card>
+          <Card className="mt-4 p-4">
+            <AnotacoesDoContato
+              key={contactId}
+              contactId={contactId}
+              variante="ficha"
+              readonly={contact.is_anonymized}
+            />
           </Card>
           <div className="mt-4">
             <RoteirosDoContato contactId={contactId} />

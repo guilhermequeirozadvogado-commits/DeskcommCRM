@@ -66,6 +66,16 @@ export type ContactCreate = z.infer<typeof contactCreateSchema>;
 
 export const contactPatchSchema = contactCreateSchema.partial().extend({
   source: z.string().min(1).optional(),
+  // Anotações permanentes da equipe (migration 0655). Só no PATCH: quem cria o
+  // contato pela API ou pelo WhatsApp não tem o que anotar ainda. String vazia
+  // vira `null` para apagar a anotação sem guardar texto em branco. O teto é o
+  // mesmo do CHECK `contacts_notes_tamanho`.
+  notes: z
+    .string()
+    .max(10_000, "As anotações passam de 10.000 caracteres")
+    .transform((v) => (v.trim() === "" ? null : v))
+    .nullable()
+    .optional(),
 });
 export type ContactPatch = z.infer<typeof contactPatchSchema>;
 

@@ -236,7 +236,10 @@ export function ConversationListItem({
       className={cn(
         "group relative flex w-full items-start gap-3 border-b border-border/70 px-3 py-2.5 text-left transition-colors hover:bg-surface-elevated",
         "focus-visible:outline-hidden focus-visible:bg-surface-elevated",
-        isSelected && "bg-accent-50 hover:bg-accent-50",
+        // `accent-soft` e não `accent-50`: o 50 é o mesmo verde-claro nos dois
+        // temas, e no escuro o nome do contato (texto claro) sumia na linha
+        // selecionada.
+        isSelected && "bg-accent-soft hover:bg-accent-soft",
       )}
       aria-current={isSelected ? "true" : undefined}
     >

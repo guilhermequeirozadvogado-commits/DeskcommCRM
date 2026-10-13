@@ -107,6 +107,7 @@ export {
   ImageSquare,
   MusicNote,
   Note,
+  NotePencil,
   FileText,
   Lock,
   LockOpen,

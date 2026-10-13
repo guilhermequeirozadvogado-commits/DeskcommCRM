@@ -1271,6 +1271,22 @@ export const DICIONARIO: Traducoes = {
   "Confirmar desfecho": { es: "Confirmar resultado" },
   "Demanda vigente neste canal": { es: "Caso vigente en este canal" },
   "Memória do contato": { es: "Memoria del contacto" },
+  // Anotações permanentes do contato (migration 0655).
+  "Anotações do contato": { es: "Notas del contacto" },
+  "Ficam salvas no contato e aparecem em todas as conversas dele.": {
+    es: "Quedan guardadas en el contacto y aparecen en todas sus conversaciones.",
+  },
+  "Anotações salvas.": { es: "Notas guardadas." },
+  "Não foi possível salvar as anotações. Tente de novo.": {
+    es: "No se pudieron guardar las notas. Inténtalo de nuevo.",
+  },
+  "Não consegui carregar as anotações.": { es: "No pude cargar las notas." },
+  "Sem anotações.": { es: "Sin notas." },
+  "Ex.: prefere contato à tarde; já enviou os documentos.": {
+    es: "Ej.: prefiere que lo contacten por la tarde; ya envió los documentos.",
+  },
+  "Passou do limite de 10.000 caracteres.": { es: "Superó el límite de 10.000 caracteres." },
+  "Salvar anotações": { es: "Guardar notas" },
   "Fatos duráveis registrados nas notas. Pendências pertencem à demanda vigente.": { es: "Hechos duraderos registrados en las notas. Los pendientes corresponden al caso vigente." },
   "Nenhum fato durável registrado.": { es: "No hay hechos duraderos registrados." },
   "Histórico encerrado — sem tarefas pendentes": { es: "Historial cerrado — sin tareas pendientes" },

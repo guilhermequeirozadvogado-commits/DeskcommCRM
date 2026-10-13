@@ -314,7 +314,9 @@ describe("MessageBubble — contenção de layout e quebra de palavras (#1451)",
     // juntas, vence o break-word e a quebra forçada fica sem efeito.
     expect(p.className).not.toContain("break-words");
 
-    const bolha = p.closest(".max-w-\\[75\\%\\]");
+    // Pela IDENTIDADE da bolha, não pela largura: a largura máxima é escolha
+    // visual (mudou no estilo WhatsApp) e o que este caso vigia é o `min-w-0`.
+    const bolha = p.closest('[data-testid="message-bubble"]');
     expect(bolha).not.toBeNull();
     expect(bolha?.className).toContain("min-w-0");
 

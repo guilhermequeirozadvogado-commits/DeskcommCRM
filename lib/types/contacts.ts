@@ -27,6 +27,8 @@ export interface Contact {
   source: string;
   source_metadata: Record<string, unknown>;
   custom_fields: Record<string, unknown>;
+  /** Anotações permanentes da equipe (migration 0655); zerada na anonimização. */
+  notes?: string | null;
   created_at: string;
   updated_at: string;
   last_activity_at: string | null;

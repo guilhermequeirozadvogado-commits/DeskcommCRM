@@ -337,13 +337,13 @@ export function ChatThread({
   }
 
   return (
-    <div {...sinalDoCanal} className="flex h-full min-w-0 flex-col">
+    <div {...sinalDoCanal} className="chat-papel-de-parede flex h-full min-w-0 flex-col">
       {termo && (
-        <div className="px-4 py-1 text-xs text-muted-foreground" role="status">
+        <div className="bg-chat-bar px-4 py-1 text-xs text-muted-foreground" role="status">
           {t("Resultados nas mensagens carregadas")}: {resultados.size}
         </div>
       )}
-      <div ref={scrollerRef} className="min-w-0 flex-1 overflow-y-auto py-2">
+      <div ref={scrollerRef} className="min-w-0 flex-1 overflow-y-auto pb-3 pt-1">
         {q.hasNextPage && (
           <div className="flex justify-center py-2">
             <Button
@@ -358,13 +358,13 @@ export function ChatThread({
         )}
 
         {groups.map((g) => (
-          <div key={g.key} className="space-y-1">
-            <div className="sticky top-0 z-10 flex justify-center py-1">
-              <span className="rounded-full bg-background/80 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground backdrop-blur">
+          <div key={g.key}>
+            <div className="sticky top-0 z-10 flex justify-center pb-1 pt-2">
+              <span className="rounded-lg bg-chat-chip px-3 py-1 text-xs font-medium text-chat-chip-foreground shadow-sm">
                 {dayLabel(g.date, t, localeDaData)}
               </span>
             </div>
-            {g.items.map((item) =>
+            {g.items.map((item, i) =>
               item.kind === "passagem" ? (
                 <PassagemCard
                   key={`passagem-${item.data.id}`}
@@ -398,6 +398,13 @@ export function ChatThread({
                 <MessageBubble
                   key={`msg-${item.data.id}`}
                   message={item.data}
+                  // A "ponta" só na primeira de uma sequência do mesmo lado:
+                  // nota, cartão de passagem ou troca de lado reiniciam a
+                  // sequência, como no WhatsApp.
+                  cauda={(() => {
+                    const anterior = g.items[i - 1];
+                    return !anterior || anterior.kind !== "message" || anterior.data.direction !== item.data.direction;
+                  })()}
                   searchMatch={resultados.has(item.data.id)}
                   debugCitations={debugCitations}
                   onResponder={onResponder}

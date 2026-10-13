@@ -444,7 +444,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     <>
       <div
         className={cn(
-          "relative border-t border-border bg-background px-3 py-2",
+          "relative border-t border-border bg-chat-bar px-3 py-2",
           mode === "note" && "border-warning/40 bg-warning-bg",
         )}
       >
@@ -629,7 +629,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                 : t("Enter envia · Shift+Enter quebra linha")
             }
             className={cn(
-              "max-h-40 min-h-9 flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm",
+              "max-h-40 min-h-9 flex-1 resize-none rounded-lg border border-transparent bg-chat-input px-3 py-2 text-sm shadow-xs",
               "placeholder:text-muted-foreground focus:ring-1 focus:ring-ring focus:outline-hidden",
             )}
             disabled={mode === "note" ? isDisabled : respostaBarrada}

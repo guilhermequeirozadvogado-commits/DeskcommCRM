@@ -35,7 +35,7 @@ import { padraoRegexDeBusca } from "@/lib/contacts/busca-regex";
 type SB = SupabaseClient;
 
 const SELECT_COLS =
-  "id, organization_id, name, display_name, email, email_normalized, phone_number, cpf_hash, birthdate, is_blocked, blocked_reason, is_personal, is_anonymized, anonymized_at, is_merged_into, merged_at, consent, tags, source, source_metadata, custom_fields, created_at, updated_at, last_activity_at, first_service_at";
+  "id, organization_id, name, display_name, email, email_normalized, phone_number, cpf_hash, birthdate, is_blocked, blocked_reason, is_personal, is_anonymized, anonymized_at, is_merged_into, merged_at, consent, tags, source, source_metadata, custom_fields, notes, created_at, updated_at, last_activity_at, first_service_at";
 
 interface CursorPayload {
   sort: string | null;
@@ -641,6 +641,10 @@ export async function patchContactHandler(
   // aqui tornaria IMPOSSÍVEL apagar um campo pela tela, porque a chave removida
   // voltaria do estado anterior a cada gravação.
   if (input.custom_fields !== undefined) patch.custom_fields = input.custom_fields;
+  // O audit grava só o NOME do campo (`fields`), nunca o texto: anotação é dado
+  // pessoal livre e o `api_audit_log` é append-only — não teria como apagá-la na
+  // anonimização.
+  if (input.notes !== undefined) patch.notes = input.notes;
   if (input.consent !== undefined) {
     // MERGE por finalidade, nunca substituição.
     //
