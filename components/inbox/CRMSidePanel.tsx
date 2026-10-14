@@ -1,6 +1,7 @@
 "use client";
 
 import { AnotacoesDoContato } from "@/components/contacts/AnotacoesDoContato";
+import { FichaDoContato } from "@/components/contacts/FichaDoContato";
 import { RoteirosDoContato } from "@/components/contacts/RoteirosDoContato";
 import { AcervoSearch } from "./AcervoSearch";
 import { LeadEnrichment } from "./LeadEnrichment";
@@ -726,6 +727,16 @@ export function CRMSidePanel({ conversation }: Props) {
 
       {/* Logo abaixo do cartão: é o que o atendente precisa ler ANTES de
           responder, e vale para todas as conversas deste contato. */}
+      {/* A ficha do pré-atendimento (grupos estilo Kommo), antes das anotações:
+          os dados estruturados primeiro, o texto livre depois. */}
+      {contactId && (
+        <FichaDoContato
+          key={`ficha-${contactId}`}
+          contactId={contactId}
+          readonly={readonly || !!contact?.is_anonymized}
+        />
+      )}
+
       {contactId && (
         <AnotacoesDoContato
           key={contactId}

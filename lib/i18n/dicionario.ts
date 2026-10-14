@@ -1271,6 +1271,12 @@ export const DICIONARIO: Traducoes = {
   "Confirmar desfecho": { es: "Confirmar resultado" },
   "Demanda vigente neste canal": { es: "Caso vigente en este canal" },
   "Memória do contato": { es: "Memoria del contacto" },
+  // Ficha do contato (grupos do pré-atendimento).
+  "Não consegui carregar a ficha do contato.": { es: "No pude cargar la ficha del contacto." },
+  "{feitos} de {total}": { es: "{feitos} de {total}" },
+  "Valor inválido. Use o formato 1.250,50.": { es: "Valor inválido. Usa el formato 1.250,50." },
+  "Use só números inteiros.": { es: "Usa solo números enteros." },
+  "Cadastrado (protegido)": { es: "Registrado (protegido)" },
   // Anotações permanentes do contato (migration 0655).
   "Anotações do contato": { es: "Notas del contacto" },
   "Ficam salvas no contato e aparecem em todas as conversas dele.": {
