@@ -576,6 +576,17 @@ beforeAll(() => {
           values
             (v_org, v_sess, timestamptz '2030-01-01 03:00:00+00', timestamptz '2030-01-01 05:00:00+00');
         end if;
+
+        -- migration 9001 (fork QMZ): o catalogo de campos da ficha. Vazar a
+        -- definicao entrega ao vizinho o DESENHO da operacao do outro (que
+        -- dados ele coleta de cada cliente — "senha de segredo de justica"
+        -- inclusive). Select-then-insert, como as irmas acima.
+        if not exists (select 1 from public.crm_field_definitions where organization_id = v_org) then
+          insert into public.crm_field_definitions
+            (organization_id, entity_kind, api_key, storage_key, field_type, label)
+          values
+            (v_org, 'contact', 'rls_invariant', 'ficha_rls_invariant', 'text', 'RLS invariant campo');
+        end if;
       end loop;
     end
     $seed$;
@@ -747,6 +758,12 @@ export const TABLES = [
   // RPC. Vazar a linha entrega ao vizinho quando o outro vai mexer nas
   // conexões dele — e a retomada programada passaria a ser do vizinho.
   "channel_schedules",
+  // migration 9001 (fork QMZ) — o catálogo de campos da ficha do contato.
+  // Leitura org-flat (a ficha de qualquer membro resolve o layout); a escrita é
+  // só do servidor (nenhuma policy de insert/update/delete para authenticated),
+  // e esse eixo é medido em tests/invariants/crm-layouts-rls.test.ts, junto com
+  // as duas tabelas de layout, que têm prova própria lá.
+  "crm_field_definitions",
   // ⚠️ `cobranca_assinaturas` (migration 0583) NÃO entra nesta lista, pelo mesmo
   // motivo de `webhook_lead_captures`: a leitura é só do `admin` e o usuário
   // semeado aqui é `agent`, então o controle positivo falharia por ACERTO. A
