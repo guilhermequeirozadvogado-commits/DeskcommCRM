@@ -65,7 +65,7 @@ export function PreviaDaFicha({ doc, fields }: { doc: LayoutDocumentV1; fields: 
                             {def.label}
                             {c.destaque ? <span aria-hidden> ★</span> : null}
                           </dt>
-                          <dd className="rounded border bg-muted/40 px-2 py-1 text-sm text-muted-foreground">
+                          <dd className="rounded-md border bg-muted/40 px-2 py-1 text-sm text-muted-foreground">
                             {def.field_type === "select" && opcao ? opcao.label : exemplo(def.field_type)}
                           </dd>
                         </div>

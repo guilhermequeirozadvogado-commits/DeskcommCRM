@@ -89,9 +89,15 @@ export function EditContactDialog({ contact, open, onOpenChange, customFieldDefs
     // grava, e a ficha recarregada mostra a MESMA string.
     if (values.birthdate?.trim()) payload.birthdate = values.birthdate.trim();
     payload.tags = tags;
-    // Sempre no payload, mesmo vazio: o PATCH SUBSTITUI, e é assim que apagar um
-    // campo pela tela chega ao banco.
-    payload.custom_fields = values.custom_fields ?? {};
+    // Só entra no payload quando a pessoa mexeu nos campos DESTE diálogo. O
+    // PATCH substitui `custom_fields` inteiro: mandar a cópia carregada na
+    // abertura revertia o que a ficha do contato salvou por blur enquanto o
+    // diálogo estava aberto (duas superfícies escrevem no mesmo objeto).
+    // Quando mexeu, vai o objeto inteiro — e apagar um campo continua chegando
+    // ao banco por substituição, como antes.
+    if (form.formState.dirtyFields.custom_fields) {
+      payload.custom_fields = values.custom_fields ?? {};
+    }
 
     // A MESMA régua do servidor (a rota usa `contactPatchSchemaDoPais`): a
     // tela não pode recusar, com exemplo brasileiro, o que lá passaria.

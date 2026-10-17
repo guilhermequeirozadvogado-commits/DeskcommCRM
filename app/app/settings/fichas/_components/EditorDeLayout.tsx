@@ -67,7 +67,7 @@ export function EditorDeLayout({
     onChange(novo);
   };
 
-  const Grupo = ({ aba, grupo, ia, ig }: { aba: LayoutAba; grupo: LayoutGrupo; ia: number; ig: number }) => {
+  const renderGrupo = (aba: LayoutAba, grupo: LayoutGrupo, ia: number, ig: number) => {
     const condicao = grupo.visivelQuando ? porId.get(grupo.visivelQuando.field_id) : undefined;
     return (
       <div className="rounded-md border p-3">
@@ -144,7 +144,7 @@ export function EditorDeLayout({
           {grupo.campos.map((campo, ic) => {
             const def = porId.get(campo.field_id);
             return (
-              <li key={campo.field_id} className="flex flex-wrap items-center gap-2 rounded border bg-background px-2 py-1.5">
+              <li key={campo.field_id} className="flex flex-wrap items-center gap-2 rounded-md border bg-background px-2 py-1.5">
                 <span className="min-w-0 flex-1 truncate text-sm">{def?.label ?? t("Campo removido do catálogo")}</span>
                 {def ? <Badge variant="secondary" className="text-[10px]">{def.field_type}</Badge> : null}
                 {def?.lifecycle === "archived" ? (
@@ -258,7 +258,7 @@ export function EditorDeLayout({
           </CardHeader>
           <CardContent className="space-y-3">
             {aba.grupos.map((grupo, ig) => (
-              <Grupo key={grupo.id} aba={aba} grupo={grupo} ia={ia} ig={ig} />
+              <div key={grupo.id}>{renderGrupo(aba, grupo, ia, ig)}</div>
             ))}
             {aba.grupos.length === 0 ? (
               <p className="text-sm text-muted-foreground">{t("Aba sem grupos — adicione um grupo para receber campos.")}</p>

@@ -1,22 +1,24 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useModeloDaFicha } from "@/hooks/crm-fields/useFichas";
 import { useT } from "@/hooks/i18n/useT";
 import { apiClient } from "@/lib/api/client";
 import {
-  type CampoDaFicha,
-  type GrupoDaFicha,
   centavosParaTexto,
   estaPreenchido,
-  gruposVisiveis,
   textoParaCentavos,
   textoParaInteiro,
 } from "@/lib/contacts/ficha-do-contato";
+import { modeloPadraoDoContato } from "@/lib/crm-fields/padrao-do-contato";
+import type { AbaResolvida, CampoResolvido, GrupoResolvido, ModeloDaFicha } from "@/lib/crm-fields/tipos";
+import { gruposVisiveisDoModelo } from "@/lib/crm-fields/visibilidade";
 import type { Contact } from "@/lib/types/contacts";
 import { CaretDown, CaretRight, Check, Eye, EyeSlash, IdentificationCard } from "@/lib/ui/icons";
 import { cn } from "@/lib/utils";
@@ -41,8 +43,13 @@ interface Props {
 
 /**
  * A ficha do pré-atendimento, em grupos que abrem e fecham (estilo Kommo).
- * Cada campo salva sozinho ao sair dele. A lista de grupos e campos mora em
- * `lib/contacts/ficha-do-contato.ts`.
+ * Cada campo salva sozinho ao sair dele.
+ *
+ * O DESENHO da ficha (abas, grupos, ordem) vem do modelo resolvido em
+ * Configurações → Fichas e campos (`/api/v1/crm/layouts/resolve`); enquanto a
+ * organização não publica nada — ou quando a leitura falha — vale o modelo
+ * padrão do código (`modeloPadraoDoContato`), que é a ficha de sempre. A ficha
+ * nunca quebra por causa do layout.
  *
  * Grava pela rota do contato (`PATCH /api/v1/contacts/[id]`), que SUBSTITUI
  * `custom_fields` inteiro: por isso cada gravação parte do objeto mais recente
@@ -58,6 +65,9 @@ export function FichaDoContato({ contactId, readonly = false, variante = "painel
   const [salvoAgora, setSalvoAgora] = useState<string | null>(null);
   const atualRef = useRef<Record<string, unknown>>({});
   const filaRef = useRef<Promise<void>>(Promise.resolve());
+
+  const { data: modeloPublicado } = useModeloDaFicha();
+  const modelo: ModeloDaFicha = modeloPublicado ?? modeloPadraoDoContato();
 
   useEffect(() => {
     let cancelado = false;
@@ -81,8 +91,6 @@ export function FichaDoContato({ contactId, readonly = false, variante = "painel
       cancelado = true;
     };
   }, [contactId, tentativa]);
-
-  const grupos = useMemo(() => (contato ? gruposVisiveis(contato.custom_fields) : []), [contato]);
 
   function marcarSalvo(chave: string) {
     setSalvoAgora(chave);
@@ -149,53 +157,78 @@ export function FichaDoContato({ contactId, readonly = false, variante = "painel
 
   const compacto = variante === "painel";
 
+  const gruposDe = (aba: AbaResolvida) => (
+    <div className="divide-y divide-border rounded-md border border-border">
+      {gruposVisiveisDoModelo(aba, contato.custom_fields).map((grupo) => {
+        const campos = grupo.campos.filter(
+          (c) => !c.arquivado || c.nativo || estaPreenchido(contato.custom_fields[c.chave]),
+        );
+        if (campos.length === 0) return null;
+        const aberto = abertos[grupo.id] ?? !grupo.recolhido;
+        return (
+          <div key={grupo.id} data-testid={`ficha-grupo-${grupo.id}`}>
+            <button
+              type="button"
+              aria-expanded={aberto}
+              onClick={() => setAbertos((a) => ({ ...a, [grupo.id]: !aberto }))}
+              className="flex w-full items-center gap-1.5 px-2.5 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-text-muted hover:bg-surface-elevated focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
+            >
+              {aberto ? <CaretDown size={12} aria-hidden /> : <CaretRight size={12} aria-hidden />}
+              <span className="flex-1">{grupo.titulo}</span>
+              {grupo.contarPreenchidos && <Contagem grupo={grupo} contato={contato} t={t} />}
+            </button>
+            {aberto && (
+              <div className={cn("px-2.5 pb-2.5", compacto ? "space-y-1.5" : "grid grid-cols-1 gap-x-6 gap-y-1.5 md:grid-cols-2")}>
+                {campos.map((campo) => (
+                  <LinhaDoCampo
+                    key={campo.chave}
+                    campo={campo}
+                    contato={contato}
+                    readonly={readonly || Boolean(campo.arquivado)}
+                    compacto={compacto}
+                    salvo={salvoAgora === campo.chave}
+                    onSalvarPersonalizado={salvarPersonalizado}
+                    onSalvarNativo={(chave, corpo) => gravar(chave, () => corpo)}
+                    t={t}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
     <section data-testid="ficha-do-contato" className="space-y-1">
       <h3 className={cn("flex items-center gap-1.5 font-semibold text-text", compacto ? "text-xs" : "text-sm")}>
         <IdentificationCard size={compacto ? 13 : 16} aria-hidden className="text-text-muted" />
         {t("Ficha do contato")}
       </h3>
-      <div className="divide-y divide-border rounded-md border border-border">
-        {grupos.map((grupo) => {
-          const aberto = abertos[grupo.id] ?? !grupo.recolhido;
-          return (
-            <div key={grupo.id} data-testid={`ficha-grupo-${grupo.id}`}>
-              <button
-                type="button"
-                aria-expanded={aberto}
-                onClick={() => setAbertos((a) => ({ ...a, [grupo.id]: !aberto }))}
-                className="flex w-full items-center gap-1.5 px-2.5 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-text-muted hover:bg-surface-elevated focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
-              >
-                {aberto ? <CaretDown size={12} aria-hidden /> : <CaretRight size={12} aria-hidden />}
-                <span className="flex-1">{grupo.titulo}</span>
-                {grupo.contarPreenchidos && <Contagem grupo={grupo} contato={contato} t={t} />}
-              </button>
-              {aberto && (
-                <div className={cn("px-2.5 pb-2.5", compacto ? "space-y-1.5" : "grid grid-cols-1 gap-x-6 gap-y-1.5 md:grid-cols-2")}>
-                  {grupo.campos.map((campo) => (
-                    <LinhaDoCampo
-                      key={campo.chave}
-                      campo={campo}
-                      contato={contato}
-                      readonly={readonly}
-                      compacto={compacto}
-                      salvo={salvoAgora === campo.chave}
-                      onSalvarPersonalizado={salvarPersonalizado}
-                      onSalvarNativo={(chave, corpo) => gravar(chave, () => corpo)}
-                      t={t}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      {modelo.abas.length > 1 ? (
+        <Tabs defaultValue={modelo.abas[0]?.id}>
+          <TabsList className="h-8">
+            {modelo.abas.map((aba) => (
+              <TabsTrigger key={aba.id} value={aba.id} className="text-xs">
+                {aba.titulo}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {modelo.abas.map((aba) => (
+            <TabsContent key={aba.id} value={aba.id} className="mt-1.5">
+              {gruposDe(aba)}
+            </TabsContent>
+          ))}
+        </Tabs>
+      ) : modelo.abas[0] ? (
+        gruposDe(modelo.abas[0])
+      ) : null}
     </section>
   );
 }
 
-function Contagem({ grupo, contato, t }: { grupo: GrupoDaFicha; contato: ContatoDaFicha; t: (s: string) => string }) {
+function Contagem({ grupo, contato, t }: { grupo: GrupoResolvido; contato: ContatoDaFicha; t: (s: string) => string }) {
   const total = grupo.campos.length;
   const feitos = grupo.campos.filter((c) =>
     c.nativo === "cpf"
@@ -212,7 +245,7 @@ function Contagem({ grupo, contato, t }: { grupo: GrupoDaFicha; contato: Contato
 }
 
 /** O texto que o campo mostra para o valor guardado. */
-function textoDoValor(campo: CampoDaFicha, contato: ContatoDaFicha): string {
+function textoDoValor(campo: CampoResolvido, contato: ContatoDaFicha): string {
   if (campo.nativo === "cpf") return "";
   if (campo.nativo) return contato[campo.nativo] ?? "";
   const v = contato.custom_fields[campo.chave];
@@ -222,7 +255,7 @@ function textoDoValor(campo: CampoDaFicha, contato: ContatoDaFicha): string {
 }
 
 interface LinhaProps {
-  campo: CampoDaFicha;
+  campo: CampoResolvido;
   contato: ContatoDaFicha;
   readonly: boolean;
   compacto: boolean;
@@ -288,6 +321,7 @@ function LinhaDoCampo({ campo, contato, readonly, compacto, salvo, onSalvarPerso
 
   let controle: React.ReactNode;
   if (campo.tipo === "lista") {
+    const opcoes = (campo.opcoes ?? []).filter((o) => !o.archived || o.id === guardado);
     const atual = guardado === "" ? VAZIO : guardado;
     controle = (
       <Select
@@ -302,13 +336,13 @@ function LinhaDoCampo({ campo, contato, readonly, compacto, salvo, onSalvarPerso
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={VAZIO}>—</SelectItem>
-          {(campo.opcoes ?? []).map((o) => (
-            <SelectItem key={o} value={o}>
-              {o}
+          {opcoes.map((o) => (
+            <SelectItem key={o.id} value={o.id}>
+              {o.label}
             </SelectItem>
           ))}
           {/* Valor antigo fora da lista continua aparecendo, em vez de sumir. */}
-          {guardado !== "" && !(campo.opcoes ?? []).includes(guardado) && (
+          {guardado !== "" && !opcoes.some((o) => o.id === guardado) && (
             <SelectItem value={guardado}>{guardado}</SelectItem>
           )}
         </SelectContent>
@@ -370,13 +404,16 @@ function LinhaDoCampo({ campo, contato, readonly, compacto, salvo, onSalvarPerso
       className={cn(
         "grid items-center gap-x-2",
         compacto ? "grid-cols-[minmax(0,42%)_minmax(0,1fr)]" : "grid-cols-[minmax(0,40%)_minmax(0,1fr)]",
+        !compacto && campo.largura === 2 ? "md:col-span-2" : "",
       )}
       title={campo.dica}
     >
       <label htmlFor={id} className="flex min-w-0 items-center gap-1 text-xs text-text-muted">
         {/* Quebra em vez de cortar: "Capitalização diária" cortado em
             "Capitalização diá…" obrigava a abrir a página para saber o campo. */}
-        <span className="leading-tight wrap-anywhere">{campo.rotulo}</span>
+        <span className={cn("leading-tight wrap-anywhere", campo.destaque ? "font-medium text-text" : "")}>
+          {campo.rotulo}
+        </span>
         {salvo && (
           <span className="inline-flex shrink-0 items-center text-success" aria-live="polite">
             <Check size={11} weight="bold" aria-hidden />
