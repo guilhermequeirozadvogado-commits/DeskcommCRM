@@ -19,7 +19,8 @@ import {
  *
  *   1. ISOLAMENTO: organização B não lê ponteiro, release nem catálogo de A.
  *   2. ESCRITA SÓ DO SERVIDOR: nem o ADMIN escreve pelo PostgREST — as três
- *      tabelas não têm policy de escrita para authenticated; toda mutação passa
+ *      tabelas negam escrita no GRANT (42501, nem RLS é consultada): a migration
+ *      9001 revoga tudo de authenticated e devolve só SELECT; toda mutação passa
  *      pelas rotas (que revalidam papel e usam service role).
  *   3. ANTI-CRUZAMENTO NO SCHEMA: a FK composta (organization_id, id) impede
  *      release de A em layout de B — mesmo para quem ignora RLS.
@@ -77,24 +78,19 @@ describe("isolamento entre organizações", () => {
 });
 
 describe("escrita é só do servidor", () => {
-  it("nem o admin escreve pelo PostgREST: insert, update e delete contam 0", () => {
-    expect(
-      writeCountAs(
-        GOV_ADMIN,
-        `insert into public.crm_record_layouts (organization_id, entity_kind) values ('${GOV_ORG}', 'lead')`,
-      ),
-    ).toBe(0);
-    expect(
-      writeCountAs(GOV_ADMIN, `update public.crm_record_layouts set draft_revision = 99 where id = '${LAYOUT_A}'`),
-    ).toBe(0);
-    expect(writeCountAs(GOV_ADMIN, `delete from public.crm_field_definitions where id = '${CAMPO_A}'`)).toBe(0);
-    expect(
-      writeCountAs(
-        GOV_ADMIN,
-        `insert into public.crm_field_definitions (organization_id, entity_kind, api_key, storage_key, field_type, label)
-           values ('${GOV_ORG}', 'contact', 'x_inv', 'ficha_x_inv', 'text', 'X')`,
-      ),
-    ).toBe(0);
+  it("nem o admin escreve pelo PostgREST: as três tabelas negam no GRANT (permission denied)", () => {
+    const escritas = [
+      `insert into public.crm_record_layouts (organization_id, entity_kind) values ('${GOV_ORG}', 'lead')`,
+      `update public.crm_record_layouts set draft_revision = 99 where id = '${LAYOUT_A}'`,
+      `delete from public.crm_field_definitions where id = '${CAMPO_A}'`,
+      `insert into public.crm_field_definitions (organization_id, entity_kind, api_key, storage_key, field_type, label)
+         values ('${GOV_ORG}', 'contact', 'x_inv', 'ficha_x_inv', 'text', 'X')`,
+      `insert into public.crm_record_layout_releases (organization_id, layout_id, version, document)
+         values ('${GOV_ORG}', '${LAYOUT_A}', 999, ${DOC})`,
+    ];
+    for (const dml of escritas) {
+      expect(() => writeCountAs(GOV_ADMIN, dml)).toThrow(/permission denied for table/);
+    }
   });
 });
 
