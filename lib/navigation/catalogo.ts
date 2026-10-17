@@ -946,6 +946,19 @@ export const NAV_CATALOG = [
     minRole: "manager",
   },
   {
+    // Fichas e campos (migration 9001, fork QMZ): o catálogo de campos com
+    // identidade estável e o layout publicável da ficha do contato. `admin`
+    // porque publicar muda a ficha de toda a organização — mesmo gate das
+    // rotas /api/v1/crm/* (tela e servidor dizem a mesma coisa).
+    href: "/app/settings/fichas",
+    label: "Fichas e campos",
+    description: "Crie campos e organize a ficha do contato em abas e grupos, com rascunho e publicação.",
+    icon: "IdentificationCard",
+    group: "organizacao",
+    section: "Sua empresa",
+    minRole: "admin",
+  },
+  {
     // A área única dos recursos opcionais (pedido do mantenedor, doc 73/80):
     // tudo o que a empresa pode ligar, com o estado e o caminho até a tela onde
     // se liga. Só leitura — quem liga continua sendo a tela do assunto.
