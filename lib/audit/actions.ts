@@ -102,6 +102,14 @@ export const AUDIT_ACTIONS = [
   "profile.updated",
   "org.updated",
   "pipeline.config_updated",
+  // Catálogo de campos e layout da ficha do contato (migration 9001, fork QMZ):
+  // toda mutação de definição e todo passo do ciclo rascunho → publicação.
+  "crm_field.created",
+  "crm_field.updated",
+  "crm_field.archived",
+  "crm_layout.bootstrapped",
+  "crm_layout.draft_saved",
+  "crm_layout.published",
   "mfa.recovery_codes_regenerated",
   "notification_prefs.changed",
   "onboarding.welcome_completed",
