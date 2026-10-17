@@ -1,146 +1,38 @@
 /**
- * O modelo padrão da ficha do contato — a ponte entre a ficha fixa do código e
- * o catálogo dinâmico.
+ * O ponto de partida da ficha do contato, quando a organização ainda não
+ * montou a sua.
  *
- * Duas saídas, com o MESMO conteúdo:
+ * Duas saídas, e nenhuma traz campo:
  *
- * - `modeloPadraoDoContato()` é o FALLBACK: a organização que nunca publicou um
- *   layout renderiza exatamente este modelo, derivado de `FICHA_DO_CONTATO`. É
- *   o que faz a instalação fresca (e a falha de rede no resolve) ficar idêntica
- *   à ficha de antes do catálogo existir.
- * - `seedDoCatalogo()` é o BOOTSTRAP: o material que a rota de bootstrap grava
- *   no banco quando o admin começa a personalizar — as definições (uma por
- *   campo da ficha fixa) e o documento inicial equivalente.
+ * - `modeloVazioDoContato()` é o que a ficha renderiza enquanto NÃO há release
+ *   publicada: zero grupos. A tela mostra um estado vazio com o caminho para
+ *   Configurações → Fichas e campos — nunca uma ficha inventada pelo código.
+ * - `documentoInicial()` é o rascunho que "Começar a personalizar" grava: uma
+ *   aba, nenhum grupo. Quem administra cria os campos e os grupos pela tela.
  *
- * A equivalência estrutural entre `modeloPadraoDoContato()` e `FICHA_DO_CONTATO`
- * é critério de aceite, vigiado por `padrao-do-contato.test.ts`. Isomórfico de
- * propósito: o cliente usa o fallback sem importar nada de servidor.
+ * Até 2026-10 as duas saídas derivavam de uma ficha de pré-atendimento jurídico
+ * fixa no código (`FICHA_DO_CONTATO`), que valia para toda instalação. Ela saiu
+ * daqui: ficha de nicho é configuração da organização, guardada no banco, e não
+ * conteúdo do núcleo. As organizações que já tinham começado a personalizar não
+ * mudam — a ficha delas é a release publicada, e o bootstrap não toca em layout
+ * que já existe.
  */
 
-import {
-  CHAVE_DO_TIPO_DE_CASO,
-  FICHA_DO_CONTATO,
-  type CampoDaFicha,
-  type GrupoDaFicha,
-} from "@/lib/contacts/ficha-do-contato";
-
-import {
-  fieldTypeDoTipoDaFicha,
-  type FieldOption,
-  type LayoutDocumentV1,
-  type ModeloDaFicha,
-} from "./tipos";
-
-/** Opções da ficha fixa são strings: o id estável É o literal já gravado. */
-function opcoesDe(campo: CampoDaFicha): FieldOption[] | undefined {
-  return campo.opcoes?.map((o) => ({ id: o, label: o }));
-}
-
-function condicaoDe(grupo: GrupoDaFicha): { chave: string; valores: string[] } | undefined {
-  return grupo.soParaTipos ? { chave: CHAVE_DO_TIPO_DE_CASO, valores: [...grupo.soParaTipos] } : undefined;
-}
+import type { LayoutDocumentV1, ModeloDaFicha } from "./tipos";
 
 export const ABA_PADRAO = { id: "geral", titulo: "Geral" } as const;
 
-/** O modelo efetivo quando NÃO há release publicada. */
-export function modeloPadraoDoContato(): ModeloDaFicha {
-  return {
-    releaseId: null,
-    abas: [
-      {
-        id: ABA_PADRAO.id,
-        titulo: ABA_PADRAO.titulo,
-        grupos: FICHA_DO_CONTATO.map((g) => ({
-          id: g.id,
-          titulo: g.titulo,
-          ...(g.recolhido ? { recolhido: true } : {}),
-          ...(g.contarPreenchidos ? { contarPreenchidos: true } : {}),
-          ...(condicaoDe(g) ? { visivelQuando: condicaoDe(g) } : {}),
-          campos: g.campos.map((c) => ({
-            chave: c.chave,
-            rotulo: c.rotulo,
-            tipo: c.tipo,
-            ...(opcoesDe(c) ? { opcoes: opcoesDe(c) } : {}),
-            ...(c.nativo ? { nativo: c.nativo } : {}),
-            ...(c.dica ? { dica: c.dica } : {}),
-          })),
-        })),
-      },
-    ],
-  };
+/** O modelo efetivo quando NÃO há release publicada: nenhum grupo. */
+export function modeloVazioDoContato(): ModeloDaFicha {
+  return { releaseId: null, abas: [] };
 }
 
-// ---------------------------------------------------------------------------
-// Seed do catálogo
-// ---------------------------------------------------------------------------
-
-export interface DefinicaoDoSeed {
-  entity_kind: "contact";
-  api_key: string;
-  storage_key: string;
-  native_binding: "cpf" | "birthdate" | "email" | null;
-  field_type: ReturnType<typeof fieldTypeDoTipoDaFicha>;
-  label: string;
-  hint: string | null;
-  options: FieldOption[];
-  seeded_from: "ficha_do_contato";
+/** O rascunho em branco do "Começar a personalizar". */
+export function documentoInicial(): LayoutDocumentV1 {
+  return { version: 1, abas: [{ id: ABA_PADRAO.id, titulo: ABA_PADRAO.titulo, grupos: [] }] };
 }
 
-/** "ficha_banco" → "banco"; coluna nativa fica como está ("cpf"). */
-function apiKeyDe(chave: string): string {
-  return chave.startsWith("ficha_") ? chave.slice("ficha_".length) : chave;
-}
-
-/** Uma definição por campo da ficha fixa, na ordem em que a ficha os declara. */
-export function definicoesDoSeed(): DefinicaoDoSeed[] {
-  return FICHA_DO_CONTATO.flatMap((g) =>
-    g.campos.map((c) => ({
-      entity_kind: "contact" as const,
-      api_key: apiKeyDe(c.chave),
-      storage_key: c.chave,
-      native_binding: c.nativo ?? null,
-      field_type: fieldTypeDoTipoDaFicha(c.tipo),
-      label: c.rotulo,
-      hint: c.dica ?? null,
-      options: opcoesDe(c) ?? [],
-      seeded_from: "ficha_do_contato" as const,
-    })),
-  );
-}
-
-/**
- * O documento inicial do layout, montado DEPOIS do insert das definições —
- * os UUIDs nascem no banco, então quem chama entrega o mapa storage_key → id.
- * Lança se faltar alguma chave: um seed parcial não pode virar documento.
- */
-export function documentoDoSeed(idPorStorageKey: ReadonlyMap<string, string>): LayoutDocumentV1 {
-  const idDe = (chave: string): string => {
-    const id = idPorStorageKey.get(chave);
-    if (!id) throw new Error(`seed sem definição para a chave ${chave}`);
-    return id;
-  };
-  return {
-    version: 1,
-    abas: [
-      {
-        id: ABA_PADRAO.id,
-        titulo: ABA_PADRAO.titulo,
-        grupos: FICHA_DO_CONTATO.map((g) => ({
-          id: g.id,
-          titulo: g.titulo,
-          ...(g.recolhido ? { recolhido: true } : {}),
-          ...(g.contarPreenchidos ? { contarPreenchidos: true } : {}),
-          ...(g.soParaTipos
-            ? {
-                visivelQuando: {
-                  field_id: idDe(CHAVE_DO_TIPO_DE_CASO),
-                  valores: [...g.soParaTipos],
-                },
-              }
-            : {}),
-          campos: g.campos.map((c) => ({ field_id: idDe(c.chave) })),
-        })),
-      },
-    ],
-  };
+/** A ficha tem algo para mostrar? Release com abas só de grupos vazios conta como vazia. */
+export function modeloTemCampos(modelo: ModeloDaFicha): boolean {
+  return modelo.abas.some((a) => a.grupos.some((g) => g.campos.length > 0));
 }

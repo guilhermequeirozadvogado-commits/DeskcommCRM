@@ -46,7 +46,7 @@ export function FichasClient() {
       <Card>
         <CardHeader>
           <CardTitle>{t("Não deu para carregar o editor")}</CardTitle>
-          <CardDescription>{t("A ficha da equipe continua funcionando com o modelo atual.")}</CardDescription>
+          <CardDescription>{t("A ficha que a equipe vê não muda enquanto o editor não carrega.")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button variant="outline" onClick={() => void refetch()}>
@@ -63,7 +63,7 @@ export function FichasClient() {
         <CardHeader>
           <CardTitle>{t("Comece a personalizar a ficha")}</CardTitle>
           <CardDescription>
-            {t("O primeiro passo copia o modelo atual da ficha para um rascunho editável. Nada muda para a equipe até você publicar.")}
+            {t("O primeiro passo cria um rascunho em branco: você monta os grupos e os campos, e nada muda para a equipe até publicar.")}
           </CardDescription>
         </CardHeader>
         <CardContent>

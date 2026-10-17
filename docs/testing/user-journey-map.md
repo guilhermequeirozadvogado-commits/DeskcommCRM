@@ -3503,18 +3503,19 @@ Contexto do código: Configurações → Fichas e campos (`app/app/settings/fich
 admin). Catálogo em `crm_field_definitions` (identidade estável: renomear rótulo
 nunca órfã valor), layout em `crm_record_layouts`/`crm_record_layout_releases`
 (rascunho → publicação com CAS via `fn_publish_record_layout`). Sem publicação,
-a ficha renderiza o modelo do código (`modeloPadraoDoContato`) — instalação
-fresca idêntica à de antes. Spec: `tests/e2e/fichas-personalizaveis.spec.ts`
-(SPECS_PARTE_6).
+a ficha é VAZIA, com o atalho para montá-la (desde 2026-10-17 nenhum campo de
+nicho vem do código; até então caía na ficha jurídica fixa de um escritório).
+Spec: `tests/e2e/fichas-personalizaveis.spec.ts` (SPECS_PARTE_6).
 
 | # | Caso | Expectativa |
 |---|------|-------------|
-| J45.1 | Abrir a tela sem nunca ter personalizado | CTA "Começar a personalizar"; bootstrap copia a ficha fixa para o rascunho |
+| J45.0 | Ficha de um contato antes de qualquer personalização | estado vazio "ainda não foi montada"; admin vê o atalho "Montar a ficha", os demais a instrução |
+| J45.1 | Abrir a tela sem nunca ter personalizado | CTA "Começar a personalizar"; bootstrap cria um rascunho em branco (uma aba, nenhum grupo) |
 | J45.2 | Criar campo de texto no catálogo | aparece na tabela com a chave gerada e aviso de imutabilidade |
-| J45.3 | Adicionar o campo a um grupo e mover com os botões | ordem muda no rascunho; selo "Alterações não salvas" liga |
+| J45.3 | Criar um grupo, adicionar o campo e mover com os botões | ordem muda no rascunho; selo "Alterações não salvas" liga |
 | J45.4 | Publicar | diálogo confirma o alcance; toast de publicado; versão entra no histórico |
 | J45.5 | Ficha de um contato real mostra o campo publicado | valor digitado salva em blur e sobrevive à recarga |
-| J45.6 | Organização SEM publicação | ficha idêntica à fixa (equivalência vigiada por `lib/crm-fields/padrao-do-contato.test.ts`) |
+| J45.6 | Leitura do desenho da ficha falha | aviso com "Tentar de novo" e nenhum campo — nunca uma ficha substituta (`tests/unit/ficha-do-contato-estados.test.tsx`, `lib/crm-fields/resolvedor.test.ts`) |
 | J45.7 | Dois admins publicam em cima da mesma versão | o segundo recebe 409 e a tela pede recarregar (guardado por invariante da função SQL) |
 
 Executada em 2026-10-17 em ambiente fresco estilo VPS (Supabase local pg15 +

@@ -46,12 +46,12 @@ export const DICIONARIO: Traducoes = {
     es: "Cree campos y organice la ficha del contacto en pestañas y grupos, con borrador y publicación.",
   },
   "Não deu para carregar o editor": { es: "No se pudo cargar el editor" },
-  "A ficha da equipe continua funcionando com o modelo atual.": {
-    es: "La ficha del equipo sigue funcionando con el modelo actual.",
+  "A ficha que a equipe vê não muda enquanto o editor não carrega.": {
+    es: "La ficha que ve el equipo no cambia mientras el editor no carga.",
   },
   "Comece a personalizar a ficha": { es: "Empiece a personalizar la ficha" },
-  "O primeiro passo copia o modelo atual da ficha para um rascunho editável. Nada muda para a equipe até você publicar.": {
-    es: "El primer paso copia el modelo actual de la ficha a un borrador editable. Nada cambia para el equipo hasta que publique.",
+  "O primeiro passo cria um rascunho em branco: você monta os grupos e os campos, e nada muda para a equipe até publicar.": {
+    es: "El primer paso crea un borrador en blanco: usted arma los grupos y los campos, y nada cambia para el equipo hasta que publique.",
   },
   "Começar a personalizar": { es: "Empezar a personalizar" },
   "Layout da ficha": { es: "Diseño de la ficha" },
@@ -68,8 +68,15 @@ export const DICIONARIO: Traducoes = {
     es: "Diseño publicado: la ficha de todo el equipo usa la nueva versión.",
   },
   "Rascunho em dia": { es: "Borrador al día" },
-  "Nenhuma versão publicada — a equipe vê o modelo padrão.": {
-    es: "Ninguna versión publicada: el equipo ve el modelo estándar.",
+  "Nenhuma versão publicada — a equipe ainda vê a ficha vazia.": {
+    es: "Ninguna versión publicada: el equipo todavía ve la ficha vacía.",
+  },
+  "A ficha do contato ainda não foi montada nesta organização.": {
+    es: "La ficha del contacto todavía no se ha armado en esta organización.",
+  },
+  "Montar a ficha": { es: "Armar la ficha" },
+  "Peça a quem administra para montá-la em Configurações → Fichas e campos.": {
+    es: "Pida a quien administra que la arme en Configuración → Fichas y campos.",
   },
   "Substitui o rascunho pelo conteúdo da versão publicada.": {
     es: "Sustituye el borrador por el contenido de la versión publicada.",

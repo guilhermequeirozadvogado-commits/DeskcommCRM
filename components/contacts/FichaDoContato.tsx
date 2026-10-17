@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -7,17 +8,19 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/hooks/auth/AuthProvider";
 import { useModeloDaFicha } from "@/hooks/crm-fields/useFichas";
 import { useT } from "@/hooks/i18n/useT";
 import { apiClient } from "@/lib/api/client";
+import { ROLE_RANK } from "@/lib/auth/types";
 import {
   centavosParaTexto,
   estaPreenchido,
   textoParaCentavos,
   textoParaInteiro,
 } from "@/lib/contacts/ficha-do-contato";
-import { modeloPadraoDoContato } from "@/lib/crm-fields/padrao-do-contato";
-import type { AbaResolvida, CampoResolvido, GrupoResolvido, ModeloDaFicha } from "@/lib/crm-fields/tipos";
+import { modeloTemCampos } from "@/lib/crm-fields/padrao-do-contato";
+import type { AbaResolvida, CampoResolvido, GrupoResolvido } from "@/lib/crm-fields/tipos";
 import { gruposVisiveisDoModelo } from "@/lib/crm-fields/visibilidade";
 import type { Contact } from "@/lib/types/contacts";
 import { CaretDown, CaretRight, Check, Eye, EyeSlash, IdentificationCard } from "@/lib/ui/icons";
@@ -46,10 +49,11 @@ interface Props {
  * Cada campo salva sozinho ao sair dele.
  *
  * O DESENHO da ficha (abas, grupos, ordem) vem do modelo resolvido em
- * Configurações → Fichas e campos (`/api/v1/crm/layouts/resolve`); enquanto a
- * organização não publica nada — ou quando a leitura falha — vale o modelo
- * padrão do código (`modeloPadraoDoContato`), que é a ficha de sempre. A ficha
- * nunca quebra por causa do layout.
+ * Configurações → Fichas e campos (`/api/v1/crm/layouts/resolve`). Três estados
+ * além da ficha em si, e nenhum inventa campo: carregando (esqueleto), leitura
+ * que falhou (aviso com "tentar de novo" — trocar a ficha por outra faria quem
+ * atende achar que o dado sumiu) e organização que ainda não publicou ficha
+ * (estado vazio com o caminho para montá-la).
  *
  * Grava pela rota do contato (`PATCH /api/v1/contacts/[id]`), que SUBSTITUI
  * `custom_fields` inteiro: por isso cada gravação parte do objeto mais recente
@@ -66,8 +70,10 @@ export function FichaDoContato({ contactId, readonly = false, variante = "painel
   const atualRef = useRef<Record<string, unknown>>({});
   const filaRef = useRef<Promise<void>>(Promise.resolve());
 
-  const { data: modeloPublicado } = useModeloDaFicha();
-  const modelo: ModeloDaFicha = modeloPublicado ?? modeloPadraoDoContato();
+  const modeloQ = useModeloDaFicha();
+  const { user, activeOrg } = useAuth();
+  const podeConfigurar =
+    (user.is_platform_admin && !user.support) || (activeOrg != null && ROLE_RANK[activeOrg.role] >= ROLE_RANK.admin);
 
   useEffect(() => {
     let cancelado = false;
@@ -153,9 +159,42 @@ export function FichaDoContato({ contactId, readonly = false, variante = "painel
     );
   }
 
-  if (!contato) return <Skeleton className="h-40 w-full" />;
+  if (modeloQ.isError) {
+    return (
+      <div className="flex items-center justify-between gap-2 rounded-md border border-border p-2 text-xs">
+        <span className="text-muted-foreground">{t("Não consegui carregar a ficha do contato.")}</span>
+        <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => void modeloQ.refetch()}>
+          {t("Tentar de novo")}
+        </Button>
+      </div>
+    );
+  }
+
+  const modelo = modeloQ.data;
+  if (!contato || !modelo) return <Skeleton className="h-40 w-full" />;
 
   const compacto = variante === "painel";
+
+  if (!modeloTemCampos(modelo)) {
+    return (
+      <section data-testid="ficha-do-contato-vazia" className="space-y-1">
+        <h3 className={cn("flex items-center gap-1.5 font-semibold text-text", compacto ? "text-xs" : "text-sm")}>
+          <IdentificationCard size={compacto ? 13 : 16} aria-hidden className="text-text-muted" />
+          {t("Ficha do contato")}
+        </h3>
+        <div className="space-y-2 rounded-md border border-dashed border-border p-3 text-xs text-text-muted">
+          <p>{t("A ficha do contato ainda não foi montada nesta organização.")}</p>
+          {podeConfigurar ? (
+            <Button asChild size="sm" variant="outline" className="h-7 px-2 text-xs">
+              <Link href="/app/settings/fichas">{t("Montar a ficha")}</Link>
+            </Button>
+          ) : (
+            <p>{t("Peça a quem administra para montá-la em Configurações → Fichas e campos.")}</p>
+          )}
+        </div>
+      </section>
+    );
+  }
 
   const gruposDe = (aba: AbaResolvida) => (
     <div className="divide-y divide-border rounded-md border border-border">
