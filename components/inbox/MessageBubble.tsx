@@ -446,13 +446,16 @@ export function MessageBubble({
               <p className="whitespace-pre-wrap wrap-anywhere leading-snug">
                 {message.body}
                 {/* O espaçador: invisível, fora da árvore de acessibilidade,
-                    só ocupa a largura da hora + tiques. */}
+                    só ocupa a largura da hora + tiques. As palavras vêm por
+                    `content: attr(...)`, NUNCA como nó de texto: um nó de texto
+                    entraria no textContent do parágrafo, e copiar a mensagem
+                    (ou procurá-la pelo texto exato) levaria a hora junto. */}
                 <span aria-hidden className="invisible ml-2 inline-flex select-none items-center gap-1 align-bottom text-[11px] leading-none">
-                  {editada && <span>{t("editada")}</span>}
-                  <span>{time}</span>
+                  {editada && <span data-texto={t("editada")} className="before:content-[attr(data-texto)]" />}
+                  <span data-texto={time} className="before:content-[attr(data-texto)]" />
                   {showCitationButton && <span className="inline-block w-4" />}
                   {isOutbound && !isFailed && <span className="inline-block w-3.5" />}
-                  {isFailed && <span className="pl-3.5">{t("Falhou")}</span>}
+                  {isFailed && <span data-texto={t("Falhou")} className="pl-3.5 before:content-[attr(data-texto)]" />}
                 </span>
               </p>
             )}

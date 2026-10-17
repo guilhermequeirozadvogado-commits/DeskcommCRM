@@ -402,3 +402,20 @@ describe("MessageBubble — remetente de grupo", () => {
     expect(screen.queryByText("Maria · +5521999990000")).toBeNull();
   });
 });
+
+describe("MessageBubble — o texto do balão é só o corpo", () => {
+  // O espaçador do estilo WhatsApp reserva no fim do parágrafo a largura da
+  // hora. Quando ele levava a hora como NÓ DE TEXTO, o textContent virava
+  // "corpo da mensagem12:00": copiar a mensagem trazia a hora junto, e toda
+  // busca pelo texto exato (4 specs e2e do inbox) deixava de achar o balão.
+  it.each([
+    ["simples", {}],
+    ["editada", { edited_at: "2026-09-08T12:05:00.000Z" }],
+    ["que falhou", { status: "failed" as const }],
+  ])("mensagem %s", (_caso, over) => {
+    render(<MessageBubble message={msg(over)} />);
+    const paragrafo = screen.getByText("corpo da mensagem", { exact: true });
+    expect(paragrafo.tagName).toBe("P");
+    expect(paragrafo.textContent).toBe("corpo da mensagem");
+  });
+});
