@@ -37,6 +37,109 @@ import type { Idioma } from "./idiomas";
 type Traducoes = Record<string, Partial<Record<Exclude<Idioma, "pt-BR">, string>>>;
 
 export const DICIONARIO: Traducoes = {
+  // ── Configurações → Fichas e campos (migration 9001, fork QMZ) ──
+  "Fichas e campos": { es: "Fichas y campos" },
+  "Crie campos e organize a ficha do contato em abas e grupos. Renomear nunca perde o que já foi preenchido.": {
+    es: "Cree campos y organice la ficha del contacto en pestañas y grupos. Renombrar nunca pierde lo ya rellenado.",
+  },
+  "Crie campos e organize a ficha do contato em abas e grupos, com rascunho e publicação.": {
+    es: "Cree campos y organice la ficha del contacto en pestañas y grupos, con borrador y publicación.",
+  },
+  "Não deu para carregar o editor": { es: "No se pudo cargar el editor" },
+  "A ficha da equipe continua funcionando com o modelo atual.": {
+    es: "La ficha del equipo sigue funcionando con el modelo actual.",
+  },
+  "Comece a personalizar a ficha": { es: "Empiece a personalizar la ficha" },
+  "O primeiro passo copia o modelo atual da ficha para um rascunho editável. Nada muda para a equipe até você publicar.": {
+    es: "El primer paso copia el modelo actual de la ficha a un borrador editable. Nada cambia para el equipo hasta que publique.",
+  },
+  "Começar a personalizar": { es: "Empezar a personalizar" },
+  "Layout da ficha": { es: "Diseño de la ficha" },
+  "Catálogo de campos": { es: "Catálogo de campos" },
+  "Prévia": { es: "Vista previa" },
+  "Sem rascunho — carregue uma versão do histórico acima.": {
+    es: "Sin borrador — cargue una versión del historial de arriba.",
+  },
+  "Sem rascunho para pré-visualizar.": { es: "Sin borrador para previsualizar." },
+  "Rascunho salvo. Nada mudou para a equipe ainda.": {
+    es: "Borrador guardado. Nada cambió para el equipo todavía.",
+  },
+  "Layout publicado — a ficha de toda a equipe usa a nova versão.": {
+    es: "Diseño publicado: la ficha de todo el equipo usa la nueva versión.",
+  },
+  "Rascunho em dia": { es: "Borrador al día" },
+  "Nenhuma versão publicada — a equipe vê o modelo padrão.": {
+    es: "Ninguna versión publicada: el equipo ve el modelo estándar.",
+  },
+  "Substitui o rascunho pelo conteúdo da versão publicada.": {
+    es: "Sustituye el borrador por el contenido de la versión publicada.",
+  },
+  "Carregar versão publicada": { es: "Cargar versión publicada" },
+  "Publicar o layout da ficha?": { es: "¿Publicar el diseño de la ficha?" },
+  "A ficha do contato de toda a equipe passa a usar esta versão agora. As versões anteriores ficam no histórico.": {
+    es: "La ficha del contacto de todo el equipo pasa a usar esta versión ahora. Las versiones anteriores quedan en el historial.",
+  },
+  "Nome do grupo": { es: "Nombre del grupo" },
+  "Subir grupo": { es: "Subir grupo" },
+  "Descer grupo": { es: "Bajar grupo" },
+  "Remover grupo vazio": { es: "Quitar grupo vacío" },
+  "Tire os campos do grupo antes de removê-lo.": { es: "Quite los campos del grupo antes de eliminarlo." },
+  "Começa recolhido": { es: "Empieza plegado" },
+  "Mostrar preenchidos": { es: "Mostrar rellenados" },
+  "Aparece quando": { es: "Aparece cuando" },
+  "Sempre visível": { es: "Siempre visible" },
+  "Campo removido do catálogo": { es: "Campo eliminado del catálogo" },
+  "Destaque": { es: "Destacado" },
+  "Subir campo": { es: "Subir campo" },
+  "Descer campo": { es: "Bajar campo" },
+  "Mover para o grupo": { es: "Mover al grupo" },
+  "Tirar da ficha": { es: "Quitar de la ficha" },
+  "O campo sai do layout; o valor e a definição continuam existindo.": {
+    es: "El campo sale del diseño; el valor y la definición siguen existiendo.",
+  },
+  "Adicionar campo do catálogo…": { es: "Añadir campo del catálogo…" },
+  "Nome da aba": { es: "Nombre de la pestaña" },
+  "Subir aba": { es: "Subir pestaña" },
+  "Descer aba": { es: "Bajar pestaña" },
+  "Remover aba vazia": { es: "Quitar pestaña vacía" },
+  "Novo grupo": { es: "Nuevo grupo" },
+  "Aba sem grupos — adicione um grupo para receber campos.": {
+    es: "Pestaña sin grupos: añada un grupo para recibir campos.",
+  },
+  "Adicionar aba": { es: "Añadir pestaña" },
+  "Nova aba": { es: "Nueva pestaña" },
+  "Texto de exemplo": { es: "Texto de ejemplo" },
+  "condicional": { es: "condicional" },
+  "recolhido": { es: "plegado" },
+  "A chave de armazenamento nasce do rótulo e não muda depois — renomear é seguro.": {
+    es: "La clave de almacenamiento nace de la etiqueta y no cambia después: renombrar es seguro.",
+  },
+  "Na ficha?": { es: "¿En la ficha?" },
+  "Novo campo da ficha do contato": { es: "Nuevo campo de la ficha del contacto" },
+  "O tipo e a chave de armazenamento não mudam depois de criar; o rótulo muda quando quiser.": {
+    es: "El tipo y la clave de almacenamiento no cambian después de crear; la etiqueta cambia cuando quiera.",
+  },
+  "Instituição financeira": { es: "Institución financiera" },
+  "Opções (uma por linha)": { es: "Opciones (una por línea)" },
+  "Dica (opcional)": { es: "Pista (opcional)" },
+  "Criar campo": { es: "Crear campo" },
+  "Editar campo": { es: "Editar campo" },
+  "Opções — renomeie o texto; a chave de cada uma não muda": {
+    es: "Opciones: renombre el texto; la clave de cada una no cambia",
+  },
+  "Rótulo da opção": { es: "Etiqueta de la opción" },
+  "Texto da nova opção": { es: "Texto de la nueva opción" },
+  "Nova opção": { es: "Nueva opción" },
+  "Campo criado. Adicione-o ao layout para ele aparecer na ficha.": {
+    es: "Campo creado. Añádalo al diseño para que aparezca en la ficha.",
+  },
+  "Campo atualizado — os valores já preenchidos continuam onde estão.": {
+    es: "Campo actualizado: los valores ya rellenados siguen donde están.",
+  },
+  "Arquivar este campo?": { es: "¿Archivar este campo?" },
+  "O campo sai das escolhas novas. O que já foi preenchido continua gravado e legível; dá para reativar depois.": {
+    es: "El campo sale de las opciones nuevas. Lo ya rellenado sigue grabado y legible; se puede reactivar después.",
+  },
   "Canal para enviar os lembretes": { es: "Canal para enviar los recordatorios" },
   "Automático — conversa da reserva ou único canal disponível": { es: "Automático — conversación de la reserva o único canal disponible" },
   "Canal configurado indisponível — escolha outro": { es: "Canal configurado no disponible — elige otro" },

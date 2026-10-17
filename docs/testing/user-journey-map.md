@@ -3496,3 +3496,37 @@ do commit (resposta perdida, processo reiniciado) e retomada pela segunda tentat
 partir da lápide, com o 500 que não diz "nada foi apagado": medida por unidade em
 `lib/tenants/exclusao.test.ts` e `…/delete/route.test.ts`, e o inventário da lápide em
 `tests/invariants/gestao-de-tenants.test.ts`.
+
+## J45 — Personalizar a ficha do contato: campo novo, layout e publicação `[P1]` (2026-10-17, fork QMZ)
+
+Contexto do código: Configurações → Fichas e campos (`app/app/settings/fichas/`,
+admin). Catálogo em `crm_field_definitions` (identidade estável: renomear rótulo
+nunca órfã valor), layout em `crm_record_layouts`/`crm_record_layout_releases`
+(rascunho → publicação com CAS via `fn_publish_record_layout`). Sem publicação,
+a ficha renderiza o modelo do código (`modeloPadraoDoContato`) — instalação
+fresca idêntica à de antes. Spec: `tests/e2e/fichas-personalizaveis.spec.ts`
+(SPECS_PARTE_6).
+
+| # | Caso | Expectativa |
+|---|------|-------------|
+| J45.1 | Abrir a tela sem nunca ter personalizado | CTA "Começar a personalizar"; bootstrap copia a ficha fixa para o rascunho |
+| J45.2 | Criar campo de texto no catálogo | aparece na tabela com a chave gerada e aviso de imutabilidade |
+| J45.3 | Adicionar o campo a um grupo e mover com os botões | ordem muda no rascunho; selo "Alterações não salvas" liga |
+| J45.4 | Publicar | diálogo confirma o alcance; toast de publicado; versão entra no histórico |
+| J45.5 | Ficha de um contato real mostra o campo publicado | valor digitado salva em blur e sobrevive à recarga |
+| J45.6 | Organização SEM publicação | ficha idêntica à fixa (equivalência vigiada por `lib/crm-fields/padrao-do-contato.test.ts`) |
+| J45.7 | Dois admins publicam em cima da mesma versão | o segundo recebe 409 e a tela pede recarregar (guardado por invariante da função SQL) |
+
+Executada em 2026-10-17 em ambiente fresco estilo VPS (Supabase local pg15 +
+`baseline.sql` em modo install, `e2e:build` de produção): **J45.1–J45.5 verdes
+pela tela** (`1 passed`, evidência em `evidence/fichas-personalizaveis/` —
+trace completo + screenshots). Dois achados consertados na causa:
+
+1. **Corrida no spec** — `isVisible()` imediato lia o skeleton do editor (query
+   no cliente), devolvia `false` e pulava o bootstrap. O spec agora espera o
+   estado carregado (CTA **ou** abas) antes de decidir.
+2. **A11y no produto** — os selects "Adicionar campo do catálogo" e "Aparece
+   quando" do `EditorDeLayout` não tinham nome acessível (placeholder não é
+   accessible name); `getByRole` não os achava e leitor de tela não os anuncia.
+   Ganharam `aria-label`; a própria spec reprova se o rótulo sumir (medido:
+   vermelho sem o fix, verde com).

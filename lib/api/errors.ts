@@ -68,6 +68,20 @@ export const ApiErrorCodes = {
 
   // 409 — conflito
   idempotency_conflict: "idempotency_conflict",
+  // Catálogo de campos / layout da ficha (migration 9001, fork QMZ).
+  // 409: o rascunho ou a release ativa mudaram desde a leitura da tela — a ação
+  // de quem recebe é recarregar e comparar, nunca repetir por cima.
+  model_conflict: "model_conflict",
+  // 409/422: api_key ou storage_key já usada na organização para a entidade.
+  field_key_taken: "field_key_taken",
+  // 422: tentou mudar o que é imutável (api_key, storage_key, field_type,
+  // entity_kind) ou trocar o id de uma opção — o contrato é renomear o rótulo.
+  field_immutable: "field_immutable",
+  // 422: a definição está arquivada e a operação exige campo ativo.
+  field_archived: "field_archived",
+  // 422: o documento de layout cita field_id inexistente, de outra entidade ou
+  // arquivado; `details.field_ids` lista exatamente quais.
+  layout_invalid: "layout_invalid",
   // Mesma chave, MESMO corpo, e a primeira execução ainda está em curso: o
   // recibo/encurso está gravado (reserva, migration 0321) mas o efeito não
   // terminou. Código próprio e não o `idempotency_conflict` acima porque a ação

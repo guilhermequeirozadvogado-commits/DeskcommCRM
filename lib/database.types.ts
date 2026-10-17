@@ -5039,6 +5039,71 @@ export type Database = {
           },
         ]
       }
+      crm_field_definitions: {
+        Row: {
+          api_key: string
+          archived_at: string | null
+          created_at: string
+          created_by: string | null
+          entity_kind: string
+          field_type: string
+          hint: string | null
+          id: string
+          label: string
+          lifecycle: string
+          native_binding: string | null
+          options: Json
+          organization_id: string
+          seeded_from: string | null
+          storage_key: string
+          updated_at: string
+        }
+        Insert: {
+          api_key: string
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          entity_kind: string
+          field_type: string
+          hint?: string | null
+          id?: string
+          label: string
+          lifecycle?: string
+          native_binding?: string | null
+          options?: Json
+          organization_id: string
+          seeded_from?: string | null
+          storage_key: string
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          entity_kind?: string
+          field_type?: string
+          hint?: string | null
+          id?: string
+          label?: string
+          lifecycle?: string
+          native_binding?: string | null
+          options?: Json
+          organization_id?: string
+          seeded_from?: string | null
+          storage_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_field_definitions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_lead_activities: {
         Row: {
           actor_agent_id: string | null
@@ -5800,6 +5865,112 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "crm_proposals"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_record_layout_releases: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          document: Json
+          id: string
+          layout_id: string
+          organization_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          document: Json
+          id?: string
+          layout_id: string
+          organization_id: string
+          version: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          document?: Json
+          id?: string
+          layout_id?: string
+          organization_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_record_layout_releases_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_record_layout_releases_organization_id_layout_id_fkey"
+            columns: ["organization_id", "layout_id"]
+            isOneToOne: false
+            referencedRelation: "crm_record_layouts"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      crm_record_layouts: {
+        Row: {
+          active_release_id: string | null
+          created_at: string
+          draft_base_release_id: string | null
+          draft_document: Json | null
+          draft_revision: number
+          entity_kind: string
+          id: string
+          organization_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          active_release_id?: string | null
+          created_at?: string
+          draft_base_release_id?: string | null
+          draft_document?: Json | null
+          draft_revision?: number
+          entity_kind: string
+          id?: string
+          organization_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          active_release_id?: string | null
+          created_at?: string
+          draft_base_release_id?: string | null
+          draft_document?: Json | null
+          draft_revision?: number
+          entity_kind?: string
+          id?: string
+          organization_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_record_layouts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_record_layouts_active_release_fk"
+            columns: ["organization_id", "active_release_id"]
+            isOneToOne: false
+            referencedRelation: "crm_record_layout_releases"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "crm_record_layouts_draft_base_release_fk"
+            columns: ["organization_id", "draft_base_release_id"]
+            isOneToOne: false
+            referencedRelation: "crm_record_layout_releases"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -10855,6 +11026,16 @@ export type Database = {
       fn_lead_anotar_campos: {
         Args: { p_org: string; p_lead: string; p_campos: Json }
         Returns: Json
+      }
+      fn_publish_record_layout: {
+        Args: {
+          p_org: string
+          p_layout: string
+          p_document: Json
+          p_expected_release: string | null
+          p_actor: string | null
+        }
+        Returns: string
       }
       fn_lgpd_anonymize_contact: {
         Args: { p_contact_id: string; p_organization_id: string }
