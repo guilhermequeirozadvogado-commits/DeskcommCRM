@@ -98,6 +98,7 @@ export const DICIONARIO: Traducoes = {
     es: "El campo sale del diseño; el valor y la definición siguen existiendo.",
   },
   "Adicionar campo do catálogo…": { es: "Añadir campo del catálogo…" },
+  "Adicionar campo do catálogo": { es: "Añadir campo del catálogo" },
   "Nome da aba": { es: "Nombre de la pestaña" },
   "Subir aba": { es: "Subir pestaña" },
   "Descer aba": { es: "Bajar pestaña" },
