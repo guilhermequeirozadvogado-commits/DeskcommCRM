@@ -1,6 +1,7 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it } from "vitest";
 
-import { chavesProtegidasDoModelo, comporModelo } from "./resolvedor";
+import { FalhaAoResolverFicha, chavesProtegidasDoModelo, comporModelo, resolverModeloDoContato } from "./resolvedor";
 import type { LayoutDocumentV1 } from "./tipos";
 
 const RELEASE = "99999999-9999-4999-8999-999999999999";
@@ -96,5 +97,71 @@ describe("comporModelo", () => {
   it("chavesProtegidasDoModelo enxerga o protegido do modelo dinâmico", () => {
     expect(chavesProtegidasDoModelo(modelo).has("ficha_senha")).toBe(true);
     expect(chavesProtegidasDoModelo(modelo).has("ficha_banco")).toBe(false);
+  });
+});
+
+/**
+ * O cliente falso responde por TABELA: cada `from(t)` devolve uma cadeia em
+ * que `eq` encadeia, `maybeSingle()` resolve a linha, e a cadeia é ela mesma
+ * "awaitable" (a leitura de definições não chama `maybeSingle`).
+ */
+type Resposta = { data: unknown; error: { message: string } | null };
+function clienteFalso(porTabela: Record<string, Resposta>): SupabaseClient {
+  return {
+    from(tabela: string) {
+      const resposta = porTabela[tabela] ?? { data: null, error: null };
+      const cadeia = {
+        select: () => cadeia,
+        eq: () => cadeia,
+        maybeSingle: () => Promise.resolve(resposta),
+        then: (ok: (r: Resposta) => unknown, falha?: (e: unknown) => unknown) => Promise.resolve(resposta).then(ok, falha),
+      };
+      return cadeia;
+    },
+  } as unknown as SupabaseClient;
+}
+
+describe("resolverModeloDoContato — sem publicação, vazio; com falha, erro", () => {
+  const ORG = "55555555-5555-4555-8555-555555555555";
+
+  it("organização que nunca começou a personalizar: modelo vazio", async () => {
+    const modelo = await resolverModeloDoContato(clienteFalso({}), ORG);
+    expect(modelo).toEqual({ releaseId: null, abas: [] });
+  });
+
+  it("rascunho sem publicação: modelo vazio", async () => {
+    const admin = clienteFalso({ crm_record_layouts: { data: { id: "l", active_release_id: null }, error: null } });
+    expect((await resolverModeloDoContato(admin, ORG)).abas).toEqual([]);
+  });
+
+  it("falha ao ler o ponteiro LANÇA — nunca troca a ficha por outra", async () => {
+    const admin = clienteFalso({ crm_record_layouts: { data: null, error: { message: "timeout" } } });
+    await expect(resolverModeloDoContato(admin, ORG)).rejects.toBeInstanceOf(FalhaAoResolverFicha);
+  });
+
+  it("falha ao ler a release ou o catálogo LANÇA", async () => {
+    const ponteiro = { data: { id: "l", active_release_id: RELEASE }, error: null };
+    const semRelease = clienteFalso({
+      crm_record_layouts: ponteiro,
+      crm_record_layout_releases: { data: null, error: { message: "boom" } },
+    });
+    await expect(resolverModeloDoContato(semRelease, ORG)).rejects.toBeInstanceOf(FalhaAoResolverFicha);
+    const semCatalogo = clienteFalso({
+      crm_record_layouts: ponteiro,
+      crm_record_layout_releases: { data: { id: RELEASE, document: DOC }, error: null },
+      crm_field_definitions: { data: null, error: { message: "boom" } },
+    });
+    await expect(resolverModeloDoContato(semCatalogo, ORG)).rejects.toBeInstanceOf(FalhaAoResolverFicha);
+  });
+
+  it("release publicada: compõe o documento com o catálogo", async () => {
+    const admin = clienteFalso({
+      crm_record_layouts: { data: { id: "l", active_release_id: RELEASE }, error: null },
+      crm_record_layout_releases: { data: { id: RELEASE, document: DOC }, error: null },
+      crm_field_definitions: { data: [def(F_TIPO), def(F_BANCO)], error: null },
+    });
+    const modelo = await resolverModeloDoContato(admin, ORG);
+    expect(modelo.releaseId).toBe(RELEASE);
+    expect(modelo.abas.length).toBeGreaterThan(0);
   });
 });

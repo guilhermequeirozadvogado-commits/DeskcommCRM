@@ -95,7 +95,7 @@ export function BarraDePublicacao({
         <span className="truncate text-xs text-muted-foreground">
           {versaoAtiva !== null
             ? `${t("Versão publicada")}: v${versaoAtiva}`
-            : t("Nenhuma versão publicada — a equipe vê o modelo padrão.")}
+            : t("Nenhuma versão publicada — a equipe ainda vê a ficha vazia.")}
         </span>
       </div>
       {releaseAtiva ? (

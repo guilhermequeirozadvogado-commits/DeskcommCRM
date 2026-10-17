@@ -2,17 +2,17 @@
  * Catálogo de campos com identidade estável + layout publicável da ficha.
  *
  * A peça resolve o defeito central dos dois mecanismos de campos que existiam:
- * na ficha fixa (`lib/contacts/ficha-do-contato.ts`) os grupos moram no código,
- * e nos campos de funil a `key` é ao mesmo tempo a identidade e a chave de
+ * na ficha fixa (que vivia em `lib/contacts/ficha-do-contato.ts`) os grupos
+ * moravam no código, e nos campos de funil a `key` é ao mesmo tempo a identidade e a chave de
  * armazenamento — renomear órfã os valores. Aqui a identidade é um UUID
  * (`FieldDefinition.id`), a chave de armazenamento (`storage_key`) é imutável e
  * o rótulo é livre. Os VALORES continuam onde sempre estiveram
  * (`contacts.custom_fields` ou coluna nativa); o catálogo é só metadado.
  *
  * O modelo EFETIVO que a ficha renderiza (`ModeloDaFicha`) vem de uma release
- * publicada (`crm_record_layout_releases`) — ou, sem publicação nenhuma, do
- * modelo padrão derivado de `FICHA_DO_CONTATO` (`padrao-do-contato.ts`), para a
- * instalação fresca ficar idêntica à de antes.
+ * publicada (`crm_record_layout_releases`) — ou, sem publicação nenhuma, é o
+ * modelo vazio (`padrao-do-contato.ts`): a tela mostra o caminho para montar a
+ * ficha, e nenhum campo de nicho vem do código.
  */
 
 import type { CampoNativo, TipoDeCampoDaFicha } from "@/lib/contacts/ficha-do-contato";
@@ -32,14 +32,17 @@ export type FieldType =
   | "email"
   | "phone"
   | "url"
-  /** Só o seed de `ficha_senha_segredo` usa; a rota recusa criar um novo. */
+  /**
+   * Só existe em definição semeada pela antiga ficha fixa (a senha de segredo
+   * de justiça); a rota recusa criar um novo.
+   */
   | "protected";
 
 /**
  * Opção de lista com identidade estável: `id` nunca muda (é o que vai para o
  * valor gravado), `label` é livre, arquivar tira da escolha nova sem apagar o
- * histórico. No seed do legado o `id` É o literal que já estava gravado
- * ("RCV", "Sim"…), então nenhum valor migra.
+ * histórico. Nas definições semeadas pela antiga ficha fixa, o `id` É o
+ * literal que já estava gravado ("RCV", "Sim"…), então nenhum valor migrou.
  */
 export interface FieldOption {
   id: string;
@@ -166,24 +169,6 @@ export function tipoDaFicha(t: FieldType): TipoDeCampoDaFicha | null {
     case "boolean":
     case "multiselect":
       return null;
-  }
-}
-
-/** O inverso, para o seed: todo tipo da ficha fixa tem um `field_type`. */
-export function fieldTypeDoTipoDaFicha(t: TipoDeCampoDaFicha): FieldType {
-  switch (t) {
-    case "texto":
-      return "text";
-    case "numero":
-      return "number";
-    case "moeda":
-      return "currency";
-    case "data":
-      return "date";
-    case "lista":
-      return "select";
-    case "protegido":
-      return "protected";
   }
 }
 

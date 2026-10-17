@@ -1,11 +1,15 @@
 /**
  * Resolve o modelo EFETIVO da ficha do contato de uma organização: a release
- * publicada composta com o catálogo — ou, sem publicação, o modelo padrão do
- * código. Roda no servidor (recebe o admin client e filtra a organização
- * explicitamente; o chamador é quem autentica).
+ * publicada composta com o catálogo — ou, sem publicação, o modelo vazio. Roda
+ * no servidor (recebe o admin client e filtra a organização explicitamente; o
+ * chamador é quem autentica).
  *
- * Decisões de composição, todas na direção de "a ficha nunca quebra":
- * - ponteiro ausente, release ausente ou erro de leitura → modelo padrão;
+ * Ponteiro ou release ausente → modelo vazio (a tela mostra o caminho para
+ * configurar). ERRO de leitura → `FalhaAoResolverFicha`, nunca um modelo: um
+ * modelo trocado por falha de rede faria a ficha da organização parecer vazia
+ * — ou outra —, e quem atende leria isso como dado perdido.
+ *
+ * Decisões de composição, na direção de "a ficha nunca esconde dado":
  * - `field_id` sem definição (apagada por fora) → campo pulado;
  * - tipo sem renderização na ficha (`boolean`/`multiselect`) → campo pulado;
  * - definição arquivada → campo entra marcado `arquivado` (a tela mostra o
@@ -16,7 +20,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { modeloPadraoDoContato } from "./padrao-do-contato";
+import { modeloVazioDoContato } from "./padrao-do-contato";
 import {
   tipoDaFicha,
   type FieldDefinition,
@@ -97,6 +101,14 @@ export function comporModelo(
   };
 }
 
+/** A leitura do layout falhou — o chamador responde erro, nunca um modelo substituto. */
+export class FalhaAoResolverFicha extends Error {
+  constructor(motivo: string) {
+    super(`falha ao resolver a ficha do contato: ${motivo}`);
+    this.name = "FalhaAoResolverFicha";
+  }
+}
+
 export async function resolverModeloDoContato(
   admin: SupabaseClient,
   orgId: string,
@@ -107,7 +119,8 @@ export async function resolverModeloDoContato(
     .eq("organization_id", orgId)
     .eq("entity_kind", "contact")
     .maybeSingle();
-  if (error || !ponteiro?.active_release_id) return modeloPadraoDoContato();
+  if (error) throw new FalhaAoResolverFicha(error.message);
+  if (!ponteiro?.active_release_id) return modeloVazioDoContato();
 
   const [{ data: release, error: erroRelease }, { data: definicoes, error: erroDefs }] = await Promise.all([
     admin
@@ -122,7 +135,9 @@ export async function resolverModeloDoContato(
       .eq("organization_id", orgId)
       .eq("entity_kind", "contact"),
   ]);
-  if (erroRelease || erroDefs || !release?.document) return modeloPadraoDoContato();
+  if (erroRelease || erroDefs) throw new FalhaAoResolverFicha((erroRelease ?? erroDefs)!.message);
+  // Ponteiro para release que não existe (apagada por fora): sem documento, sem ficha.
+  if (!release?.document) return modeloVazioDoContato();
 
   return comporModelo(
     release.document as LayoutDocumentV1,
@@ -131,7 +146,7 @@ export async function resolverModeloDoContato(
   );
 }
 
-/** As chaves de campos protegidos do modelo resolvido (espelha `chavesProtegidas`). */
+/** As chaves de campos protegidos do modelo resolvido. */
 export function chavesProtegidasDoModelo(modelo: ModeloDaFicha): Set<string> {
   return new Set(
     modelo.abas.flatMap((a) => a.grupos.flatMap((g) => g.campos.filter((c) => c.tipo === "protegido").map((c) => c.chave))),
