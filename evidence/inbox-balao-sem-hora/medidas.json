@@ -1,0 +1,16 @@
+{
+  "data": "2026-10-17",
+  "ambiente": "Supabase local pg15 + baseline.sql + e2e:build (next start de produção), worktree limpo na main do fork + o conserto",
+  "specs_que_estavam_vermelhas": {
+    "central-avisos-destino.spec.ts": "4 passed",
+    "encerramento-atendimento.spec.ts": "2 passed",
+    "roteamento-por-canal.spec.ts": "1 passed",
+    "inbox-rotulo-de-origem.spec.ts": "1 passed"
+  },
+  "espacador_x_hora_px": [
+    { "balao": "PERGUNTA DO CLIENTE", "textContent": "PERGUNTA DO CLIENTE", "larguraEspacador": 24.9, "larguraHora": 24.9, "horaCobreTexto": false },
+    { "balao": "RESPOSTA DIGITADA POR MIM", "textContent": "RESPOSTA DIGITADA POR MIM", "larguraEspacador": 42.9, "larguraHora": 42.9, "horaCobreTexto": false },
+    { "balao": "RESPOSTA DO AGENTE", "textContent": "RESPOSTA DO AGENTE", "larguraEspacador": 42.9, "larguraHora": 42.9, "horaCobreTexto": false }
+  ],
+  "metodo": "getBoundingClientRect do espaçador e do bloco da hora; Range.getClientRects das linhas do texto contra o retângulo da hora"
+}
