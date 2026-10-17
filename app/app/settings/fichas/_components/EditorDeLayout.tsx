@@ -114,7 +114,7 @@ export function EditorDeLayout({
               })
             }
           >
-            <SelectTrigger className="h-7 w-52 text-xs"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-7 w-52 text-xs" aria-label={t("Aparece quando")}><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value={SENTINELA_SEM_CONDICAO}>{t("Sempre visível")}</SelectItem>
               {camposDeLista.map((f) => (
@@ -207,7 +207,7 @@ export function EditorDeLayout({
                 aplicar((d) => { d.abas[ia]!.grupos[ig]!.campos.push({ field_id: fieldId }); })
               }
             >
-              <SelectTrigger className="h-8 w-64 text-xs">
+              <SelectTrigger className="h-8 w-64 text-xs" aria-label={t("Adicionar campo do catálogo")}>
                 <SelectValue placeholder={t("Adicionar campo do catálogo…")} />
               </SelectTrigger>
               <SelectContent>

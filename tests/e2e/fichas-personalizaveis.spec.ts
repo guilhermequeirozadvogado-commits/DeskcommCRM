@@ -30,12 +30,17 @@ test("criar campo, publicar layout e ver o campo salvo na ficha do contato", asy
 
   // 1. Bootstrap, quando esta organização ainda não personalizou nada. O botão
   //    só existe na primeira vez — o banco de e2e é compartilhado entre specs.
+  //    O editor carrega por query no cliente: antes de decidir se clica, espere
+  //    o estado CARREGADO (botão ou abas) — um isVisible() imediato lê o
+  //    skeleton, devolve false e pula o bootstrap (foi a 1ª falha medida local).
   await abrirFichas(page);
   const comecar = page.getByRole("button", { name: "Começar a personalizar" });
-  if (await comecar.isVisible().catch(() => false)) {
+  const abaCatalogo = page.getByRole("tab", { name: "Catálogo de campos" });
+  await expect(comecar.or(abaCatalogo).first()).toBeVisible({ timeout: 20_000 });
+  if (await comecar.isVisible()) {
     await comecar.click();
   }
-  await expect(page.getByRole("tab", { name: "Catálogo de campos" })).toBeVisible({ timeout: 20_000 });
+  await expect(abaCatalogo).toBeVisible({ timeout: 20_000 });
 
   // 2. Cria o campo novo no catálogo.
   await page.getByRole("tab", { name: "Catálogo de campos" }).click();

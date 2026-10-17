@@ -3517,5 +3517,16 @@ fresca idêntica à de antes. Spec: `tests/e2e/fichas-personalizaveis.spec.ts`
 | J45.6 | Organização SEM publicação | ficha idêntica à fixa (equivalência vigiada por `lib/crm-fields/padrao-do-contato.test.ts`) |
 | J45.7 | Dois admins publicam em cima da mesma versão | o segundo recebe 409 e a tela pede recarregar (guardado por invariante da função SQL) |
 
-Pendências conhecidas: prova visual em VPS fresca ainda não executada nesta
-máquina (sem Docker) — fica para o CI/execução manual; ver o corpo do commit.
+Executada em 2026-10-17 em ambiente fresco estilo VPS (Supabase local pg15 +
+`baseline.sql` em modo install, `e2e:build` de produção): **J45.1–J45.5 verdes
+pela tela** (`1 passed`, evidência em `evidence/fichas-personalizaveis/` —
+trace completo + screenshots). Dois achados consertados na causa:
+
+1. **Corrida no spec** — `isVisible()` imediato lia o skeleton do editor (query
+   no cliente), devolvia `false` e pulava o bootstrap. O spec agora espera o
+   estado carregado (CTA **ou** abas) antes de decidir.
+2. **A11y no produto** — os selects "Adicionar campo do catálogo" e "Aparece
+   quando" do `EditorDeLayout` não tinham nome acessível (placeholder não é
+   accessible name); `getByRole` não os achava e leitor de tela não os anuncia.
+   Ganharam `aria-label`; a própria spec reprova se o rótulo sumir (medido:
+   vermelho sem o fix, verde com).
