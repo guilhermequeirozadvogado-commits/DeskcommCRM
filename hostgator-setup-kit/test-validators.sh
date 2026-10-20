@@ -1753,6 +1753,31 @@ else
   printf '  ✓ REVERSE_PROXY=caddy (default): dc_files() não menciona o override do NPM\n'
 fi
 
+echo "proxy reverso: portaria da VPS"
+# Portaria = repassador neutro nas 80/443 (VPS dividida com outro sistema). O Caddy
+# continua de pé, só sem publicar portas: o override tem de entrar pelo dc_files().
+if REVERSE_PROXY=portaria dc_files | grep -q 'docker-compose.portaria.yml'; then
+  printf '  ✓ dc_files() entra o docker-compose.portaria.yml com REVERSE_PROXY=portaria
+'
+else
+  printf '  ✗ dc_files() não entrou o docker-compose.portaria.yml com REVERSE_PROXY=portaria (deu: %s)
+'     "$(REVERSE_PROXY=portaria dc_files)"; fail=1
+fi
+if REVERSE_PROXY=portaria SINGLE_SERVER=1 dc_files | grep -q 'docker-compose.single-server.yml -f docker-compose.portaria.yml'; then
+  printf '  ✓ single-server + portaria: o override da portaria entra DEPOIS do single-server
+'
+else
+  printf '  ✗ single-server + portaria: ordem errada (deu: %s)
+' "$(REVERSE_PROXY=portaria SINGLE_SERVER=1 dc_files)"; fail=1
+fi
+if REVERSE_PROXY=caddy dc_files | grep -q 'docker-compose.portaria.yml'; then
+  printf '  ✗ dc_files() entrou o docker-compose.portaria.yml SEM REVERSE_PROXY=portaria (vacuidade)
+'; fail=1
+else
+  printf '  ✓ REVERSE_PROXY=caddy (default): dc_files() não menciona a portaria
+'
+fi
+
 npm_rede_e2e() {  # npm_rede_e2e <descrição> <segue|morre> <rede existe: 0 ok, 1 sumiu>
   local desc="$1" esperado="$2" existe="$3" dir real kit="$PWD"
   dir="$(mktemp -d)"; mkdir -p "$dir/bin"

@@ -4,6 +4,18 @@
 
 {
 	email {$ACME_EMAIL}
+	# Modo portaria (docker-compose.portaria.yml): o IP real de quem chegou vem pelo
+	# PROXY protocol, aceito só da faixa da portaria. Sem a portaria a faixa é
+	# 127.0.0.1/32 — ninguém de fora entra nela, e um cabeçalho PROXY forjado é ignorado.
+	servers :443 {
+		listener_wrappers {
+			proxy_protocol {
+				timeout 5s
+				allow {$PORTARIA_CIDR:127.0.0.1/32}
+			}
+			tls
+		}
+	}
 }
 
 {$DOMAIN} {

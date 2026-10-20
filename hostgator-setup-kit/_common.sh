@@ -11,6 +11,7 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_i18n.sh"
 COMPOSE="docker-compose.prod.yml"
 COMPOSE_TRAEFIK="docker-compose.traefik.yml"
 COMPOSE_NPM="docker-compose.npm.yml"
+COMPOSE_PORTARIA="docker-compose.portaria.yml"
 # Overlay que constrói as imagens no lugar de puxá-las. Existe no repo com
 # `pull_policy: never` nas três imagens e sai do MESMO commit que o `git
 # checkout` deixou no disco — é o caminho de quem não consegue usar as imagens
@@ -262,6 +263,7 @@ dc() {
     case "${REVERSE_PROXY:-caddy}" in
     traefik) docker compose -f "$COMPOSE" -f docker-compose.single-server.yml -f "$COMPOSE_TRAEFIK" ${ca[@]+"${ca[@]}"} "$@" ;;
     npm)     docker compose -f "$COMPOSE" -f docker-compose.single-server.yml -f "$COMPOSE_NPM" ${ca[@]+"${ca[@]}"} "$@" ;;
+    portaria) docker compose -f "$COMPOSE" -f docker-compose.single-server.yml -f "$COMPOSE_PORTARIA" ${ca[@]+"${ca[@]}"} "$@" ;;
     *)       docker compose -f "$COMPOSE" -f docker-compose.single-server.yml ${ca[@]+"${ca[@]}"} "$@" ;;
     esac
     return
@@ -269,6 +271,7 @@ dc() {
   case "${REVERSE_PROXY:-caddy}" in
   traefik) docker compose -f "$COMPOSE" -f "$COMPOSE_TRAEFIK" ${ca[@]+"${ca[@]}"} "$@" ;;
   npm)     docker compose -f "$COMPOSE" -f "$COMPOSE_NPM" ${ca[@]+"${ca[@]}"} "$@" ;;
+  portaria) docker compose -f "$COMPOSE" -f "$COMPOSE_PORTARIA" ${ca[@]+"${ca[@]}"} "$@" ;;
   *)       docker compose -f "$COMPOSE" ${ca[@]+"${ca[@]}"} "$@" ;;
   esac
 }
@@ -291,6 +294,7 @@ dc_files() {
     case "${REVERSE_PROXY:-caddy}" in
     traefik) printf -- '-f %s -f %s -f %s%s' "$COMPOSE" docker-compose.single-server.yml "$COMPOSE_TRAEFIK" "$sufixo" ;;
     npm)     printf -- '-f %s -f %s -f %s%s' "$COMPOSE" docker-compose.single-server.yml "$COMPOSE_NPM" "$sufixo" ;;
+    portaria) printf -- '-f %s -f %s -f %s%s' "$COMPOSE" docker-compose.single-server.yml "$COMPOSE_PORTARIA" "$sufixo" ;;
     *)       printf -- '-f %s -f %s%s' "$COMPOSE" docker-compose.single-server.yml "$sufixo" ;;
     esac
     return
@@ -298,6 +302,7 @@ dc_files() {
   case "${REVERSE_PROXY:-caddy}" in
   traefik) printf -- '-f %s -f %s%s' "$COMPOSE" "$COMPOSE_TRAEFIK" "$sufixo" ;;
   npm)     printf -- '-f %s -f %s%s' "$COMPOSE" "$COMPOSE_NPM" "$sufixo" ;;
+  portaria) printf -- '-f %s -f %s%s' "$COMPOSE" "$COMPOSE_PORTARIA" "$sufixo" ;;
   *)       printf -- '-f %s%s' "$COMPOSE" "$sufixo" ;;
   esac
 }
@@ -1440,6 +1445,15 @@ garantir_rede_do_proxy() {
 Rode 'docker network ls', identifique a rede do seu NPM (Settings > a que o
 contêiner dele já está conectado) e ponha PROXY_NETWORK_NAME=<nome> no .env
 antes de tentar de novo." "$rede")"
+  fi
+  # Portaria: a rede é criada pela portaria da VPS (ela é quem atende 80/443).
+  if [ "${REVERSE_PROXY:-caddy}" = "portaria" ]; then
+    local rede_portaria
+    rede_portaria="${PORTARIA_NETWORK:-portaria-deskcomm}"
+    docker network inspect "$rede_portaria" >/dev/null 2>&1 && return 0
+    die "$(t "A rede Docker '{1}' (a da portaria da VPS) não existe.
+Instale a portaria antes (é ela que cria a rede e atende as portas 80/443) ou
+ponha PORTARIA_NETWORK=<nome> no .env." "$rede_portaria")"
   fi
   [ "${REVERSE_PROXY:-caddy}" = "traefik" ] || return 0
   local nossa drv erro
