@@ -8,6 +8,12 @@ Se você roda o DeskcommCRM numa VPS, **leia a seção da versão para a qual es
 
 ## [Não lançado]
 
+### Adicionado
+
+- **Modo `REVERSE_PROXY=portaria`, para dividir a VPS com outro sistema** Quando uma portaria neutra (um repassador que não pertence a nenhum sistema) ocupa as portas 80/443 e entrega a cada sistema as conexões dos domínios dele sem abrir a criptografia, o Caddy do DeskcommCRM continua de pé, com os próprios certificados e regras, mas deixa de publicar as portas e entra na rede da portaria (`docker-compose.portaria.yml`). O IP real de quem acessa chega pelo PROXY protocol, aceito só da faixa da portaria. Os dois Caddyfiles ganharam esse aceite; sem a portaria a faixa é `127.0.0.1/32` e nada muda.
+
+  Você não precisa fazer nada, a não ser que use a portaria: aí é `REVERSE_PROXY=portaria` no `.env`.
+
 ## [1.80.0] — 2026-10-11
 
 ### Adicionado

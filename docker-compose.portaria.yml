@@ -1,0 +1,28 @@
+# docker-compose.portaria.yml — override para VPS com uma PORTARIA na frente: um
+# repassador neutro (de nenhum sistema) que ocupa as portas 80/443 e entrega a
+# cada sistema da VPS as conexões dos domínios dele, SEM abrir a criptografia
+# (repasse por SNI). Usado na VPS que divide o servidor com o QMZ CRM.
+#
+#   REVERSE_PROXY=portaria no .env  (o dc() do kit entra este arquivo sozinho)
+#
+# Diferente de traefik/npm, o Caddy do DeskcommCRM CONTINUA de pé, com os
+# certificados e as regras dele — só deixa de publicar as portas e entra na
+# rede da portaria (PORTARIA_NETWORK, criada pela portaria), onde ela o encontra
+# pelo nome `deskcomm-borda`. A portaria conta o IP real de quem chegou pelo
+# PROXY protocol, aceito só da faixa dessa rede (PORTARIA_CIDR → Caddyfile).
+
+services:
+  caddy:
+    ports: !reset []
+    environment:
+      PORTARIA_CIDR: ${PORTARIA_CIDR:-172.30.2.0/24}
+    networks:
+      portaria:
+        aliases: [deskcomm-borda]
+
+# `external: true` = quem cria esta rede é a portaria, não este compose. Rede
+# ausente é recusada antes de criar qualquer coisa (garantir_rede_do_proxy).
+networks:
+  portaria:
+    external: true
+    name: ${PORTARIA_NETWORK:-portaria-deskcomm}
